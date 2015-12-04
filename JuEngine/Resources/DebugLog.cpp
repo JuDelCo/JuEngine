@@ -16,8 +16,8 @@ namespace JuEngine
 {
 DebugLog::DebugLog() : IObject("debugLog")
 {
-    stdout = freopen("log.log", "w", stdout);
-    stderr = freopen("err.log", "w", stderr);
+	stdout = freopen("log.log", "w", stdout);
+	stderr = freopen("err.log", "w", stderr);
 
 	// Set buffers to NULL, so fflush() is not needed even if the program crashes
 	setvbuf(stdout, NULL, _IONBF, 0);
@@ -29,8 +29,10 @@ DebugLog::~DebugLog()
 	fclose(stdout);
 	fclose(stderr);
 
-    stdout = freopen("CON", "w", stdout);
-    stderr = freopen("CON", "w", stderr);
+	#if defined(_WIN32)
+		freopen("CON", "w", stdout);
+		freopen("CON", "w", stderr);
+	#endif
 
 	RemoveLogIfEmpty("log.log");
 	RemoveLogIfEmpty("err.log");
