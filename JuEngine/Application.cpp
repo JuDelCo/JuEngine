@@ -33,7 +33,6 @@ Application::Application() : IObject("application")
 	mMaterialManager = unique_ptr<MaterialManager>(new MaterialManager());
 	mMeshManager = unique_ptr<MeshManager>(new MeshManager());
 	mShaderManager = unique_ptr<ShaderManager>(new ShaderManager());
-	mPhysicsManager = unique_ptr<PhysicsManager>(new PhysicsManager());
 	mLevelManager = unique_ptr<LevelManager>(new LevelManager());
 
 	SystemInit();
@@ -75,7 +74,6 @@ if(!mIsRunning) DebugLog::Write("RunThread: Post-update");
 
 				mAppTimeManager->FixedUpdate();
 				mEntityManager->FixedUpdate();
-				mPhysicsManager->FixedUpdate();
 			}
 
 if(!mIsRunning) DebugLog::Write("RunThread: Post-fixedUpdate");
@@ -160,7 +158,6 @@ void Application::SystemInit()
 void Application::SystemEnd()
 {
 	mEntityManager->Unload();
-	mPhysicsManager->Unload();
 	mTimerCallbackManager->Unload();
 	mTimerManager->Unload();
 	mLevelManager->Unload();

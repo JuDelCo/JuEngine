@@ -17,7 +17,6 @@ class InputManager;
 class LevelManager;
 class MaterialManager;
 class MeshManager;
-class PhysicsManager;
 class PrefabManager;
 class ShaderManager;
 class TimerManager;
@@ -51,7 +50,6 @@ private:
 	unique_ptr<LevelManager> mLevelManager;
 	unique_ptr<MaterialManager> mMaterialManager;
 	unique_ptr<MeshManager> mMeshManager;
-	unique_ptr<PhysicsManager> mPhysicsManager;
 	unique_ptr<PrefabManager> mPrefabManager;
 	unique_ptr<ShaderManager> mShaderManager;
 	unique_ptr<TimerManager> mTimerManager;

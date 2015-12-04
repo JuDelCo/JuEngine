@@ -4,7 +4,6 @@
 
 #include "WindowManager.hpp"
 #include "InputManager.hpp"
-#include "PhysicsManager.hpp"
 #include "../OpenGL.hpp"
 #include "../Resources/Renderer.hpp"
 #include "../Resources/DebugLog.hpp"
@@ -211,7 +210,6 @@ void WindowManager::Load()
 void WindowManager::Render()
 {
 	mRenderer->Render();
-	PhysicsManager::DebugDraw();
 	DebugBar::Draw();
 
 	SwapBuffers();
