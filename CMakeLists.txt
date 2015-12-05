@@ -63,7 +63,6 @@ if(UNIX)
 	set(GLEW_PATH "/home/judelco/Projects/Libraries/glew-1.13.0")
 	set(GLM_PATH "/home/judelco/Projects/Libraries/glm-0.9.7.1")
 	set(ASSIMP_PATH "/home/judelco/Projects/Libraries/assimp-3.1.1_20151125")
-	set(ATB_PATH "/home/judelco/Projects/Libraries/AntTweakBar-1.1.6")
 elseif(WIN32)
 	set(LINK_FLAGS "-lopengl32")
 
@@ -77,7 +76,6 @@ elseif(WIN32)
 	set(GLEW_PATH "C:/Programacion/CppLibs/GLEW-1.12.0-${BUILD_CPU_ARCH}")
 	set(GLM_PATH "C:/Programacion/CppLibs/GLM-0.9.6.1")
 	set(ASSIMP_PATH "C:/Programacion/CppLibs/Assimp-3.1.1_20150222-${BUILD_CPU_ARCH}")
-	set(ATB_PATH "C:/Programacion/CppLibs/AntTweakBar-1.16-${BUILD_CPU_ARCH}")
 endif()
 
 # ----------------------------------------------------------------------------------------------
@@ -90,14 +88,12 @@ include_directories(
 	${GLEW_PATH}/include
 	${GLM_PATH}/include
 	${ASSIMP_PATH}/include
-	${ATB_PATH}/include
 )
 
 link_directories(
 	${GLFW_PATH}/lib
 	${GLEW_PATH}/lib
 	${ASSIMP_PATH}/lib
-	${ATB_PATH}/lib
 )
 
 add_library(${LIBRARY_NAME} ${BUILD_SHARED_LIBS}
@@ -113,7 +109,6 @@ target_link_libraries(${LIBRARY_NAME}
 	glfw
 	GLEW
 	assimp
-	AntTweakBar
 )
 
 # ----------------------------------------------------------------------------------------------

@@ -7,7 +7,6 @@
 #include "../OpenGL.hpp"
 #include "../Resources/Renderer.hpp"
 #include "../Resources/DebugLog.hpp"
-#include "../Resources/DebugBar.hpp"
 #include <thread>
 
 namespace JuEngine
@@ -33,7 +32,6 @@ WindowManager::~WindowManager()
 {
 	glfwDestroyWindow(mWindow);
 	glfwTerminate();
-	DebugBar::Terminate();
 
 	WindowManager::mInstance = nullptr;
 }
@@ -146,7 +144,6 @@ void WindowManager::Load()
 
 	glewExperimental = GL_TRUE;
 	glewInit();
-	DebugBar::Init();
 
 	DebugLog::Write("-------------------------------------------------");
 	DebugLog::Write("OpenGL context settings:");
@@ -185,32 +182,16 @@ void WindowManager::Load()
 	glfwSetWindowFocusCallback(mWindow, WindowManager::CallbackWindowFocus);
 	glfwSetWindowCloseCallback(mWindow, WindowManager::CallbackClose);
 	glfwSetDropCallback(mWindow, WindowManager::CallbackDrop);
-	glfwSetKeyCallback(mWindow, [](GLFWwindow* window, int key, int scanCode, int action, int mods) {
-		InputManager::CallbackKeyEvent(window, key, scanCode, action, mods);
-		DebugBar::CallbackKeyEvent(window, key, scanCode, action, mods);
-	});
-	glfwSetCharCallback(mWindow, [](GLFWwindow* window, unsigned int codePoint) {
-		InputManager::CallbackTextEvent(window, codePoint);
-		DebugBar::CallbackTextEvent(window, codePoint);
-	});
-	glfwSetCursorPosCallback(mWindow, [](GLFWwindow* window, double xPos, double yPos) {
-		InputManager::CallbackMouseMoveEvent(window, xPos, yPos);
-		DebugBar::CallbackMouseMoveEvent(window, xPos, yPos);
-	});
-	glfwSetMouseButtonCallback(mWindow, [](GLFWwindow* window, int button, int action, int mods) {
-		InputManager::CallbackMouseButtonEvent(window, button, action, mods);
-		DebugBar::CallbackMouseButtonEvent(window, button, action, mods);
-	});
-	glfwSetScrollCallback(mWindow, [](GLFWwindow* window, double xOffset, double yOffset) {
-		InputManager::CallbackMouseScrollEvent(window, xOffset, yOffset);
-		DebugBar::CallbackMouseScrollEvent(window, xOffset, yOffset);
-	});
+	glfwSetKeyCallback(mWindow, InputManager::CallbackKeyEvent);
+	glfwSetCharCallback(mWindow, InputManager::CallbackTextEvent);
+	glfwSetCursorPosCallback(mWindow, InputManager::CallbackMouseMoveEvent);
+	glfwSetMouseButtonCallback(mWindow, InputManager::CallbackMouseButtonEvent);
+	glfwSetScrollCallback(mWindow, InputManager::CallbackMouseScrollEvent);
 }
 
 void WindowManager::Render()
 {
 	mRenderer->Render();
-	DebugBar::Draw();
 
 	SwapBuffers();
 }
@@ -266,7 +247,6 @@ auto WindowManager::GetWindow() -> GLFWwindow*
 void WindowManager::CallbackWindowSize(GLFWwindow* window, int width, int height)
 {
 	WindowManager::mInstance->mWindowSize = vec2(width, height);
-	DebugBar::CallbackWindowSize(WindowManager::mInstance->mWindowSize);
 }
 
 void WindowManager::CallbackFramebufferSize(GLFWwindow* window, int width, int height)

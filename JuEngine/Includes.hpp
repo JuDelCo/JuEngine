@@ -30,7 +30,6 @@
 #include "Managers/WindowManager.hpp"
 
 #include "Resources/Clock.hpp"
-#include "Resources/DebugBar.hpp"
 #include "Resources/DebugLog.hpp"
 #include "Resources/Entity.hpp"
 #include "Resources/ForwardRenderer.hpp"
