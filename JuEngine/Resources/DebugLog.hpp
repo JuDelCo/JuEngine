@@ -4,11 +4,12 @@
 
 #pragma once
 
-#include "../IObject.hpp"
+#include "../INonCopyable.hpp"
+#include "../StdDefines.hpp"
 
 namespace JuEngine
 {
-class JUENGINEAPI DebugLog : public IObject
+class JUENGINEAPI DebugLog : public INonCopyable
 {
 	public:
 		DebugLog();

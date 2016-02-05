@@ -3,7 +3,7 @@
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
 #include "Transform.hpp"
-#include "../Resources/Entity.hpp"
+#include "../ECS/Entity.hpp"
 
 namespace JuEngine
 {

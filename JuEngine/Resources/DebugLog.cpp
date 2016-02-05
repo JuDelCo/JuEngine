@@ -14,7 +14,7 @@
 
 namespace JuEngine
 {
-DebugLog::DebugLog() : IObject("debugLog")
+DebugLog::DebugLog()
 {
 	stdout = freopen("log.log", "w", stdout);
 	stderr = freopen("err.log", "w", stderr);

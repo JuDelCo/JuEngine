@@ -3,9 +3,9 @@
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
 #include "ForwardRenderer.hpp"
-#include "../Managers/EntityManager.hpp"
+#include "../ECS/EntityManager.hpp"
 #include "../Managers/WindowManager.hpp"
-#include "Entity.hpp"
+#include "../ECS/Entity.hpp"
 #include "Shader.hpp"
 #include "../Components/Camera.hpp"
 #include "../Components/Light.hpp"

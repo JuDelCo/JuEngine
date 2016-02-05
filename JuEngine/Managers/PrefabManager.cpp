@@ -4,7 +4,7 @@
 
 #include "PrefabManager.hpp"
 #include "../Resources/Prefab.hpp"
-#include "../Resources/Entity.hpp"
+#include "../ECS/Entity.hpp"
 #include "../Components/Transform.hpp"
 #include "../Resources/DebugLog.hpp"
 

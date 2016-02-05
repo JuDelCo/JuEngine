@@ -5,8 +5,8 @@
 #pragma once
 
 #include "../IObject.hpp"
-#include "../Managers/EntityManager.hpp"
-#include "../Components/Component.hpp"
+#include "EntityManager.hpp"
+#include "Component.hpp"
 #include <vector>
 #include <unordered_map>
 

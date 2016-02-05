@@ -3,7 +3,7 @@
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
 #include "EntityManager.hpp"
-#include "../Resources/Entity.hpp"
+#include "Entity.hpp"
 #include "../Components/World.hpp"
 #include "../Resources/DebugLog.hpp"
 #include <algorithm>

@@ -4,7 +4,7 @@
 
 #include "Entity.hpp"
 #include "../Components/Transform.hpp"
-#include "DebugLog.hpp"
+#include "../Resources/DebugLog.hpp"
 
 namespace JuEngine
 {

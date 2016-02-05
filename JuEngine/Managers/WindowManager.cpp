@@ -7,6 +7,8 @@
 #include "../OpenGL.hpp"
 #include "../Resources/Renderer.hpp"
 #include "../Resources/DebugLog.hpp"
+#include "../ImGui/imgui.hpp"
+#include "../ImGui/impl/imgui_impl_glfw.h"
 #include <thread>
 
 namespace JuEngine
@@ -30,6 +32,7 @@ WindowManager::WindowManager() : IObject("windowManager")
 
 WindowManager::~WindowManager()
 {
+	ImGui_ImplGlfw_Shutdown();
 	glfwDestroyWindow(mWindow);
 	glfwTerminate();
 
@@ -144,6 +147,11 @@ void WindowManager::Load()
 
 	glewExperimental = GL_TRUE;
 	glewInit();
+	ImGui_ImplGlfw_Init(mWindow, false);
+	ImGui_ImplGlfw_NewFrame();
+
+	ImGuiIO& io = ImGui::GetIO();
+	io.IniFilename = NULL;
 
 	DebugLog::Write("-------------------------------------------------");
 	DebugLog::Write("OpenGL context settings:");
@@ -182,18 +190,32 @@ void WindowManager::Load()
 	glfwSetWindowFocusCallback(mWindow, WindowManager::CallbackWindowFocus);
 	glfwSetWindowCloseCallback(mWindow, WindowManager::CallbackClose);
 	glfwSetDropCallback(mWindow, WindowManager::CallbackDrop);
-	glfwSetKeyCallback(mWindow, InputManager::CallbackKeyEvent);
-	glfwSetCharCallback(mWindow, InputManager::CallbackTextEvent);
+	glfwSetKeyCallback(mWindow, [](GLFWwindow* window, int key, int scanCode, int action, int mods) {
+		InputManager::CallbackKeyEvent(window, key, scanCode, action, mods);
+		ImGui_ImplGlfw_KeyCallback(window, key, scanCode, action, mods);
+	});
+	glfwSetCharCallback(mWindow, [](GLFWwindow* window, unsigned int codePoint) {
+		InputManager::CallbackTextEvent(window, codePoint);
+		ImGui_ImplGlfw_CharCallback(window, codePoint);
+	});
 	glfwSetCursorPosCallback(mWindow, InputManager::CallbackMouseMoveEvent);
-	glfwSetMouseButtonCallback(mWindow, InputManager::CallbackMouseButtonEvent);
-	glfwSetScrollCallback(mWindow, InputManager::CallbackMouseScrollEvent);
+	glfwSetMouseButtonCallback(mWindow, [](GLFWwindow* window, int button, int action, int mods) {
+		InputManager::CallbackMouseButtonEvent(window, button, action, mods);
+		ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
+	});
+	glfwSetScrollCallback(mWindow, [](GLFWwindow* window, double xOffset, double yOffset) {
+		InputManager::CallbackMouseScrollEvent(window, xOffset, yOffset);
+		ImGui_ImplGlfw_ScrollCallback(window, xOffset, yOffset);
+	});
 }
 
 void WindowManager::Render()
 {
 	mRenderer->Render();
+	ImGui::Render();
 
 	SwapBuffers();
+	ImGui_ImplGlfw_NewFrame();
 }
 
 void WindowManager::SwapBuffers()

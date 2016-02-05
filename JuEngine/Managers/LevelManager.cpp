@@ -4,7 +4,7 @@
 
 #include "LevelManager.hpp"
 #include "../Resources/Level.hpp"
-#include "EntityManager.hpp"
+#include "../ECS/EntityManager.hpp"
 #include "TimerManager.hpp"
 #include "TimerCallbackManager.hpp"
 #include "../Resources/DebugLog.hpp"

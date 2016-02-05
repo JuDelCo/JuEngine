@@ -4,7 +4,7 @@
 
 #include "Camera.hpp"
 #include "Transform.hpp"
-#include "../Resources/Entity.hpp"
+#include "../ECS/Entity.hpp"
 
 namespace JuEngine
 {

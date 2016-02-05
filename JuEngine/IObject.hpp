@@ -4,18 +4,12 @@
 
 #pragma once
 
-#include "DllExport.hpp"
-#include <memory>
-#include <string>
+#include "INonCopyable.hpp"
+#include "StdDefines.hpp"
 
 namespace JuEngine
 {
-using std::unique_ptr;
-using std::shared_ptr;
-using std::weak_ptr;
-using std::string;
-
-class JUENGINEAPI IObject
+class JUENGINEAPI IObject : public INonCopyable
 {
 public:
 	IObject() : mObjectName("unnamed object") {}
@@ -27,10 +21,5 @@ public:
 
 protected:
 	string mObjectName;
-
-private:
-	// NonCopyable
-	IObject(const IObject&);
-	IObject& operator =(const IObject&);
 };
 }
