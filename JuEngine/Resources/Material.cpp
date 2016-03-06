@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Juan Delgado (JuDelCo)
+// Copyright (c) 2016 Juan Delgado (JuDelCo)
 // License: GPLv3 License
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
@@ -59,8 +59,8 @@ auto Material::GetShader() -> Shader*
 	return mShader;
 }
 
-void Material::SetShader(const string& name)
+void Material::SetShader(const Identifier& id)
 {
-	mShader = ShaderManager::Get(name);
+	mShader = ShaderManager::Get(id);
 }
 }

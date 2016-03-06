@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Juan Delgado (JuDelCo)
+// Copyright (c) 2016 Juan Delgado (JuDelCo)
 // License: GPLv3 License
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
@@ -9,19 +9,19 @@ namespace JuEngine
 Mesh::Mesh() : IObject("mesh")
 {
 	/*vector<float> quad = {
-	//   X      Y      Z      NX     NY     NZ     U      V      R      G      B
-		-0.5f, -0.5f,  0.5f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, // BL
-		 0.5f, -0.5f,  0.5f,  1.0f,  1.0f,  1.0f,  1.0f,  0.0f, // BR
-		 0.5f,  0.5f,  0.5f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f, // TR
-		 0.5f,  0.5f,  0.5f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f, // TR
-		-0.5f,  0.5f,  0.5f,  1.0f,  1.0f,  1.0f,  0.0f,  1.0f, // TL
-		-0.5f, -0.5f,  0.5f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f  // BL
-	};*/
+	//    X      Y      Z      NX    NY    NZ    U     V      R      G      B
+		-0.5f, -0.5f,  0.5f,  1.f,  1.f,  1.f,  0.f,  0.f, // BL
+		 0.5f, -0.5f,  0.5f,  1.f,  1.f,  1.f,  1.f,  0.f, // BR
+		 0.5f,  0.5f,  0.5f,  1.f,  1.f,  1.f,  1.f,  1.f, // TR
+		 0.5f,  0.5f,  0.5f,  1.f,  1.f,  1.f,  1.f,  1.f, // TR
+		-0.5f,  0.5f,  0.5f,  1.f,  1.f,  1.f,  0.f,  1.f, // TL
+		-0.5f, -0.5f,  0.5f,  1.f,  1.f,  1.f,  0.f,  0.f  // BL
+	};
 
-	// Create(quad);
+	Create(quad);*/
 }
 
-Mesh::Mesh(const vector<float>& vertexArray, const vector<unsigned int>& indexArray, const GLenum drawMode) :
+Mesh::Mesh(const std::vector<float>& vertexArray, const std::vector<unsigned int>& indexArray, const GLenum drawMode) :
 	IObject("mesh")
 {
 	Create(vertexArray, indexArray, drawMode);
@@ -33,7 +33,7 @@ Mesh::~Mesh()
 	glDeleteVertexArrays(1, &mVAO);
 }
 
-void Mesh::Create(const vector<float>& vertexArray, const vector<unsigned int>& indexArray, const GLenum drawMode)
+void Mesh::Create(const std::vector<float>& vertexArray, const std::vector<unsigned int>& indexArray, const GLenum drawMode)
 {
 	glGenBuffers(1, &mVBO);
 	glGenVertexArrays(1, &mVAO);

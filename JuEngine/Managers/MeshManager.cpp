@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Juan Delgado (JuDelCo)
+// Copyright (c) 2016 Juan Delgado (JuDelCo)
 // License: GPLv3 License
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
@@ -32,13 +32,13 @@ void MeshManager::Unload()
 	mMeshes.clear();
 }
 
-auto MeshManager::Add(const string& name, const string& fileName, const GLenum drawMode) -> Mesh*
+auto MeshManager::Add(const Identifier& id, const std::string& fileName, const GLenum drawMode) -> Mesh*
 {
-	if(MeshManager::mInstance->mMeshes.count(name) != 0)
+	if(MeshManager::mInstance->mMeshes.count(id) != 0)
 	{
-		DebugLog::Write("Warning, attempted to load a mesh with name '%s'. The mesh name is already being used", name.c_str());
+		DebugLog::Write("Warning, attempted to load a mesh with id '%s'. The mesh id is already being used", id.GetStringRef().c_str());
 
-		return Get(name);
+		return Get(id);
 	}
 
 	// ========================================================================
@@ -65,15 +65,15 @@ auto MeshManager::Add(const string& name, const string& fileName, const GLenum d
 
 		modelImporter.FreeScene();
 
-		return Get(name);
+		return Get(id);
 	}
 
-	vector<float> vertexArray;
-	vector<unsigned int> indexArray;
+	std::vector<float> vertexArray;
+	std::vector<unsigned int> indexArray;
 	unsigned int numVertices = 0;
 	unsigned int numFaces = 0;
 
-	for(size_t meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
+	for(size_t meshIndex = 0; meshIndex < (scene->mNumMeshes); ++meshIndex)
 	{
 		aiMesh* mesh = scene->mMeshes[meshIndex];
 		aiColor4D diffuseColor;
@@ -129,43 +129,43 @@ auto MeshManager::Add(const string& name, const string& fileName, const GLenum d
 
 	modelImporter.FreeScene();
 
-	return Add(name, vertexArray, indexArray, drawMode);
+	return Add(id, vertexArray, indexArray, drawMode);
 
 	// ========================================================================
 
-	return Get(name);
+	return Get(id);
 }
 
-auto MeshManager::Add(const string& name, const vector<float>& vertexArray, const vector<unsigned int>& indexArray, const GLenum drawMode) -> Mesh*
+auto MeshManager::Add(const Identifier& id, const std::vector<float>& vertexArray, const std::vector<unsigned int>& indexArray, const GLenum drawMode) -> Mesh*
 {
-	if(MeshManager::mInstance->mMeshes.count(name) != 0)
+	if(MeshManager::mInstance->mMeshes.count(id) != 0)
 	{
-		DebugLog::Write("Warning, attempted to load a mesh with name '%s'. The mesh name is already being used", name.c_str());
+		DebugLog::Write("Warning, attempted to load a mesh with id '%s'. The mesh id is already being used", id.GetStringRef().c_str());
 
-		return Get(name);
+		return Get(id);
 	}
 
-	MeshManager::mInstance->mMeshes[name] = std::make_shared<Mesh>(vertexArray, indexArray, drawMode);
-	MeshManager::mInstance->mMeshes.at(name)->SetName(name);
+	MeshManager::mInstance->mMeshes[id] = std::make_shared<Mesh>(vertexArray, indexArray, drawMode);
+	MeshManager::mInstance->mMeshes.at(id)->SetId(id);
 
-	return Get(name);
+	return Get(id);
 }
 
-auto MeshManager::Get(const string& name) -> Mesh*
+auto MeshManager::Get(const Identifier& id) -> Mesh*
 {
-	if(MeshManager::mInstance->mMeshes.count(name) != 0)
+	if(MeshManager::mInstance->mMeshes.count(id) != 0)
 	{
-		return MeshManager::mInstance->mMeshes.at(name).get();
+		return MeshManager::mInstance->mMeshes.at(id).get();
 	}
 
-	DebugLog::Write("Warning: MeshManager.Get: No mesh found with name %s", name.c_str());
+	DebugLog::Write("Warning: MeshManager.Get: No mesh found with id %s", id.GetStringRef().c_str());
 
 	return nullptr;
 }
 
-void MeshManager::Use(const string& name)
+void MeshManager::Use(const Identifier& id)
 {
-	auto mesh = Get(name);
+	auto mesh = Get(id);
 
 	if(mesh)
 	{

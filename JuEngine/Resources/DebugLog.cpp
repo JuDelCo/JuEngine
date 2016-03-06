@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Juan Delgado (JuDelCo)
+// Copyright (c) 2016 Juan Delgado (JuDelCo)
 // License: GPLv3 License
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
@@ -7,10 +7,11 @@
 #include <stdarg.h>
 #include <iostream>
 
-#include <chrono>  // chrono::system_clock
-#include <ctime>   // localtime
-#include <sstream> // stringstream
-#include <iomanip> // put_time
+#include <chrono>    // chrono::system_clock
+#include <ctime>     // localtime
+#include <sstream>   // stringstream
+#include <iomanip>   // put_time
+#include <stdexcept> // runtime_error
 
 namespace JuEngine
 {
@@ -38,7 +39,7 @@ DebugLog::~DebugLog()
 	RemoveLogIfEmpty("err.log");
 }
 
-void DebugLog::Write(const string message, ...)
+void DebugLog::Write(const std::string& message, ...)
 {
 	va_list args;
 	va_start(args, message);
@@ -50,12 +51,12 @@ void DebugLog::Write(const string message, ...)
 	va_end(args);
 }
 
-void DebugLog::Error(const string function, int line)
+void DebugLog::Error(const std::string& function, int line)
 {
 	throw std::runtime_error(function);
 }
 
-string DebugLog::GetCurrentDate()
+std::string DebugLog::GetCurrentDate()
 {
 	auto now = std::chrono::system_clock::now();
 	auto in_time_t = std::chrono::system_clock::to_time_t(now);
@@ -72,7 +73,7 @@ string DebugLog::GetCurrentDate()
 	return ss.str();
 }
 
-string DebugLog::GetCurrentTime()
+std::string DebugLog::GetCurrentTime()
 {
 	auto now = std::chrono::system_clock::now();
 	auto in_time_t = std::chrono::system_clock::to_time_t(now);
@@ -89,7 +90,7 @@ string DebugLog::GetCurrentTime()
 	return ss.str();
 }
 
-void DebugLog::RemoveLogIfEmpty(const string& fileName)
+void DebugLog::RemoveLogIfEmpty(const std::string& fileName)
 {
 	std::ifstream fs{fileName};
 

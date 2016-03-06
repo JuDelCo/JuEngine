@@ -1,49 +1,45 @@
-// Copyright (c) 2015 Juan Delgado (JuDelCo)
+// Copyright (c) 2016 Juan Delgado (JuDelCo)
 // License: GPLv3 License
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
 #pragma once
 
-#include "../IObject.hpp"
-#include "../Math.hpp"
+#include "../Resources/IObject.hpp"
+#include "../Resources/Math.hpp"
+#include "../Entity/Entity.hpp"
 #include <typeindex>
 #include <unordered_map>
+#include <memory>
 
 namespace JuEngine
 {
 class Prefab;
-class Entity;
-
-using std::type_index;
-using std::unordered_map;
+class Pool;
 
 class JUENGINEAPI PrefabManager : public IObject
 {
-public:
-	PrefabManager();
-	virtual ~PrefabManager();
+	public:
+		PrefabManager();
+		~PrefabManager();
 
-	void Unload();
-	template <typename T> static void Add();
-	template <typename T> static auto Instantiate() -> Entity*;
-	template <typename T> static auto Instantiate(const string& name) -> Entity*;
-	template <typename T> static auto Instantiate(const vec3 position, const quat orientation) -> Entity*;
-	static auto Instantiate(const string& prefabName) -> Entity*;
-	static auto Instantiate(const string& prefabName, const string& name) -> Entity*;
-	static auto Instantiate(const string& prefabName, const vec3 position, const quat orientation) -> Entity*;
+		void Unload();
+		template <typename T> static void Add();
+		template <typename T> static auto Instantiate(Pool* pool) -> EntityPtr;
+		template <typename T> static auto Instantiate(Pool* pool, const vec3 position, const quat orientation) -> EntityPtr;
+		static auto Instantiate(Pool* pool, const Identifier& id) -> EntityPtr;
+		static auto Instantiate(Pool* pool, const Identifier& id, const vec3 position, const quat orientation) -> EntityPtr;
 
-private:
-	template <typename T> static auto Get() -> T*;
-	static void Add(shared_ptr<Prefab> prefab, type_index type);
-	static auto Instantiate(Prefab* prefab) -> Entity*;
-	static auto Instantiate(Prefab* prefab, const string& name) -> Entity*;
-	static auto Instantiate(Prefab* prefab, const vec3 position, const quat orientation) -> Entity*;
-	static auto Get(type_index type) -> Prefab*;
+	private:
+		template <typename T> static auto Get() -> T*;
+		static void Add(std::shared_ptr<Prefab> prefab, std::type_index type);
+		static auto Instantiate(Pool* pool, Prefab* prefab) -> EntityPtr;
+		static auto Instantiate(Pool* pool, Prefab* prefab, const vec3 position, const quat orientation) -> EntityPtr;
+		static auto Get(std::type_index type) -> Prefab*;
 
-	unordered_map<type_index, shared_ptr<Prefab>> mPrefabs;
+		std::unordered_map<std::type_index, std::shared_ptr<Prefab>> mPrefabs;
 
-	// Sigleton
-	static PrefabManager* mInstance;
+		// Sigleton
+		static PrefabManager* mInstance;
 };
 
 template <typename T>
@@ -53,21 +49,15 @@ void PrefabManager::Add()
 }
 
 template<typename T>
-auto PrefabManager::Instantiate() -> Entity*
+auto PrefabManager::Instantiate(Pool* pool) -> EntityPtr
 {
-	return Instantiate(Get(typeid(T)));
+	return Instantiate(pool, Get(typeid(T)));
 }
 
 template <typename T>
-auto PrefabManager::Instantiate(const string& name) -> Entity*
+auto PrefabManager::Instantiate(Pool* pool, const vec3 position, const quat orientation) -> EntityPtr
 {
-	return Instantiate(Get(typeid(T)), name);
-}
-
-template <typename T>
-auto PrefabManager::Instantiate(const vec3 position, const quat orientation) -> Entity*
-{
-	return Instantiate(Get(typeid(T)), position, orientation);
+	return Instantiate(pool, Get(typeid(T)), position, orientation);
 }
 
 template<typename T>

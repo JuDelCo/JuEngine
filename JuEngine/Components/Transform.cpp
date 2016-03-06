@@ -1,15 +1,35 @@
-// Copyright (c) 2015 Juan Delgado (JuDelCo)
+// Copyright (c) 2016 Juan Delgado (JuDelCo)
 // License: GPLv3 License
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
 #include "Transform.hpp"
-#include "../ECS/Entity.hpp"
 
 namespace JuEngine
 {
-void Transform::SetParent(const Entity* parent)
+void Transform::Reset()
 {
-	SetParent(parent->GetComponent<Transform>());
+	SetLocalPosition(vec3(0.f, 0.f, 0.f));
+	SetLocalScale(vec3(1.f, 1.f, 1.f));
+	SetLocalRotation(quat(1.f, 0.f, 0.f, 0.f));
+}
+
+void Transform::Reset(const vec3 position)
+{
+	SetLocalPosition(position);
+	SetLocalScale(vec3(1.f, 1.f, 1.f));
+	SetLocalRotation(quat(1.f, 0.f, 0.f, 0.f));
+}
+
+void Transform::Reset(const vec3 position, const quat orientation)
+{
+	SetLocalPosition(position);
+	SetLocalScale(vec3(1.f, 1.f, 1.f));
+	SetLocalRotation(orientation);
+}
+
+void Transform::SetParent(const EntityPtr& parent)
+{
+	SetParent(parent->GetTransform());
 }
 
 void Transform::SetParent(Transform* parent)
@@ -61,7 +81,7 @@ auto Transform::Right() -> const vec3&
 {
 	if(mRightRefreshNeeded)
 	{
-		mRightCache = mOrientation * vec3(1.0f, 0.f, 0.f);
+		mRightCache = mOrientation * vec3(1.f, 0.f, 0.f);
 
 		mRightRefreshNeeded = false;
 	}
@@ -73,7 +93,7 @@ auto Transform::Up() -> const vec3&
 {
 	if(mUpRefreshNeeded)
 	{
-		mUpCache = mOrientation * vec3(0.f, 1.0f, 0.f);
+		mUpCache = mOrientation * vec3(0.f, 1.f, 0.f);
 
 		mUpRefreshNeeded = false;
 	}
@@ -85,7 +105,7 @@ auto Transform::Forward() -> const vec3&
 {
 	if(mForwardRefreshNeeded)
 	{
-		mForwardCache = mOrientation * vec3(0.f, 0.f, 1.0f);
+		mForwardCache = mOrientation * vec3(0.f, 0.f, 1.f);
 
 		mForwardRefreshNeeded = false;
 	}
@@ -246,13 +266,6 @@ void Transform::LookAt(const vec3 worldPosition, const vec3 worldUp)
 	}
 }
 
-void Transform::Reset()
-{
-	SetLocalPosition(vec3(0.0f, 0.0f, 0.0f));
-	SetLocalScale(vec3(1.0f, 1.0f, 1.0f));
-	SetLocalRotation(quat(1.0f, 0.0f, 0.0f, 0.0f));
-}
-
 auto Transform::GetMatrix() -> const mat4&
 {
 	bool matrixRecalculated = false;
@@ -287,7 +300,7 @@ auto Transform::GetMatrix() -> const mat4&
 
 vec3 Transform::TransformPoint(const vec3 position)
 {
-	return vec3(GetMatrix() * vec4(position, 1.0f));
+	return vec3(GetMatrix() * vec4(position, 1.f));
 }
 
 vec3 Transform::TransformVector(const vec3 vector)
@@ -334,7 +347,7 @@ auto Transform::GetInverseMatrix() -> const mat4&
 
 vec3 Transform::InverseTransformPoint(const vec3 position)
 {
-	return vec3(GetInverseMatrix() * vec4(position, 1.0f));
+	return vec3(GetInverseMatrix() * vec4(position, 1.f));
 }
 
 vec3 Transform::InverseTransformVector(const vec3 vector)
@@ -349,10 +362,10 @@ vec3 Transform::InverseTransformDirection(const vec3 direction)
 
 mat4 Transform::CalculateMatrix()
 {
-	mat4 translationMatrix = mat4(1.0f);
-	translationMatrix[3] = vec4(mPosition, 1.0f);
+	mat4 translationMatrix = mat4(1.f);
+	translationMatrix[3] = vec4(mPosition, 1.f);
 
-	mat4 scalingMatrix = mat4(1.0f);
+	mat4 scalingMatrix = mat4(1.f);
 	scalingMatrix[0][0] = mScale.x;
 	scalingMatrix[1][1] = mScale.y;
 	scalingMatrix[2][2] = mScale.z;
@@ -364,13 +377,13 @@ mat4 Transform::CalculateMatrix()
 
 mat4 Transform::CalculateInverseMatrix()
 {
-	mat4 translationMatrix = mat4(1.0f);
-	translationMatrix[3] = vec4(-mPosition, 1.0f);
+	mat4 translationMatrix = mat4(1.f);
+	translationMatrix[3] = vec4(-mPosition, 1.f);
 
-	mat4 scalingMatrix = mat4(1.0f);
-	scalingMatrix[0][0] = 1.0f / mScale.x;
-	scalingMatrix[1][1] = 1.0f / mScale.y;
-	scalingMatrix[2][2] = 1.0f / mScale.z;
+	mat4 scalingMatrix = mat4(1.f);
+	scalingMatrix[0][0] = 1.f / mScale.x;
+	scalingMatrix[1][1] = 1.f / mScale.y;
+	scalingMatrix[2][2] = 1.f / mScale.z;
 
 	mat4 rotationMatrix = mat4(Math::QuatToMat(Math::Conjugate(mOrientation)));
 

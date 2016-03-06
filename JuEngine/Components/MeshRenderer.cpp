@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Juan Delgado (JuDelCo)
+// Copyright (c) 2016 Juan Delgado (JuDelCo)
 // License: GPLv3 License
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
@@ -8,25 +8,11 @@
 
 namespace JuEngine
 {
-MeshRenderer::MeshRenderer(const string& meshName)
+void MeshRenderer::Reset(const std::string& meshName, const std::string& materialName, const bool forceDraw)
 {
-	SetMesh(meshName);
-}
-
-MeshRenderer::MeshRenderer(const string& meshName, const string& materialName)
-{
-	SetMesh(meshName);
-	SetMaterial(materialName);
-}
-
-void MeshRenderer::SetMesh(const string& name)
-{
-	mMesh = MeshManager::Get(name);
-}
-
-void MeshRenderer::SetMaterial(const string& name)
-{
-	mMaterial = MaterialManager::Get(name);
+	mMesh = MeshManager::Get(meshName);
+	mMaterial = MaterialManager::Get(materialName);
+	mForceDraw = forceDraw;
 }
 
 auto MeshRenderer::GetMesh() -> Mesh*
@@ -42,10 +28,5 @@ auto MeshRenderer::GetMaterial() -> Material*
 auto MeshRenderer::GetForceDraw() -> const bool&
 {
 	return mForceDraw;
-}
-
-void MeshRenderer::SetForceDraw(const bool force)
-{
-	mForceDraw = force;
 }
 }

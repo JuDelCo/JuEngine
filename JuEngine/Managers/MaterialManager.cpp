@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Juan Delgado (JuDelCo)
+// Copyright (c) 2016 Juan Delgado (JuDelCo)
 // License: GPLv3 License
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
@@ -29,38 +29,39 @@ void MaterialManager::Unload()
 	mMaterials.clear();
 }
 
-auto MaterialManager::Add(const string& name, const string& textureName, const string& shaderName) -> Material*
+auto MaterialManager::Add(const Identifier& id, const std::string& textureName, const std::string& shaderName) -> Material*
 {
-	if(MaterialManager::mInstance->mMaterials.count(name) != 0)
+	if(MaterialManager::mInstance->mMaterials.count(id) != 0)
 	{
-		DebugLog::Write("Warning, attempted to load a material with name '%s'. The material name is already being used", name.c_str());
+		DebugLog::Write("Warning, attempted to load a material with id '%s'. The material id is already being used", id.GetStringRef().c_str());
 
-		return Get(name);
+		return Get(id);
 	}
 
-	MaterialManager::mInstance->mMaterials[name] = std::make_shared<Material>();
-	MaterialManager::mInstance->mMaterials.at(name)->SetName(name);
-	MaterialManager::mInstance->mMaterials.at(name)->SetShader(shaderName);
-	//MaterialManager::mInstance->mMaterials.at(name)->SetTexture(textureName);
+	MaterialManager::mInstance->mMaterials[id] = std::make_shared<Material>();
+	MaterialManager::mInstance->mMaterials.at(id)->SetId(id);
+	MaterialManager::mInstance->mMaterials.at(id)->SetShader(shaderName);
+	// TODO
+	//MaterialManager::mInstance->mMaterials.at(id)->SetTexture(textureName);
 
-	return Get(name);
+	return Get(id);
 }
 
-auto MaterialManager::Get(const string& name) -> Material*
+auto MaterialManager::Get(const Identifier& id) -> Material*
 {
-	if(MaterialManager::mInstance->mMaterials.count(name) != 0)
+	if(MaterialManager::mInstance->mMaterials.count(id) != 0)
 	{
-		return MaterialManager::mInstance->mMaterials.at(name).get();
+		return MaterialManager::mInstance->mMaterials.at(id).get();
 	}
 
-	DebugLog::Write("Warning: MaterialManager.Get: No material found with name %s", name.c_str());
+	DebugLog::Write("Warning: MaterialManager.Get: No material found with id %s", id.GetStringRef().c_str());
 
 	return nullptr;
 }
 
-void MaterialManager::Use(const string& name)
+void MaterialManager::Use(const Identifier& id)
 {
-	Get(name)->Use();
+	Get(id)->Use();
 }
 
 void MaterialManager::DisableMaterials()

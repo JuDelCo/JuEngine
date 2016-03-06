@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Juan Delgado (JuDelCo)
+// Copyright (c) 2016 Juan Delgado (JuDelCo)
 // License: GPLv3 License
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
@@ -33,25 +33,13 @@ void InputManager::Update()
 		return;
 	}
 
-	for(auto& key : mIdKeyBindings)
+	for(auto &key : mKeyBindings)
 	{
 		key.second.prevPressed = key.second.pressed;
 		key.second.pressed = (glfwGetKey(WindowManager::GetWindow(), key.second.key) == GLFW_PRESS);
 	}
 
-	for(auto& key : mStringKeyBindings)
-	{
-		key.second.prevPressed = key.second.pressed;
-		key.second.pressed = (glfwGetKey(WindowManager::GetWindow(), key.second.key) == GLFW_PRESS);
-	}
-
-	for(auto& button : mIdMouseBindings)
-	{
-		button.second.prevPressed = button.second.pressed;
-		button.second.pressed = (glfwGetMouseButton(WindowManager::GetWindow(), button.second.button) == GLFW_PRESS);
-	}
-
-	for(auto& button : mStringMouseBindings)
+	for(auto &button : mMouseBindings)
 	{
 		button.second.prevPressed = button.second.pressed;
 		button.second.pressed = (glfwGetMouseButton(WindowManager::GetWindow(), button.second.button) == GLFW_PRESS);
@@ -67,42 +55,31 @@ void InputManager::Update()
 
 void InputManager::ResetBindings()
 {
-	InputManager::mInstance->mIdKeyBindings.clear();
-	InputManager::mInstance->mStringKeyBindings.clear();
+	InputManager::mInstance->mKeyBindings.clear();
 }
 
-void InputManager::BindKey(const size_t action, const KeyboardKey key)
+void InputManager::BindKey(const Identifier& action, const KeyboardKey key)
 {
-	InputManager::mInstance->mIdKeyBindings[action] = KeyInfo{key, false, false};
+	InputManager::mInstance->mKeyBindings[action] = KeyInfo{key, false, false};
 }
 
-void InputManager::BindKey(const string& action, const KeyboardKey key)
+void InputManager::BindMouse(const Identifier& action, const MouseButton button)
 {
-	InputManager::mInstance->mStringKeyBindings[action] = KeyInfo{key, false, false};
+	InputManager::mInstance->mMouseBindings[action] = MouseInfo{button, false, false};
 }
 
-void InputManager::BindMouse(const size_t action, const MouseButton button)
-{
-	InputManager::mInstance->mIdMouseBindings[action] = MouseInfo{button, false, false};
-}
-
-void InputManager::BindMouse(const string& action, const MouseButton button)
-{
-	InputManager::mInstance->mStringMouseBindings[action] = MouseInfo{button, false, false};
-}
-
-bool InputManager::IsPressed(const size_t action)
+bool InputManager::IsPressed(const Identifier& action)
 {
 	try
 	{
-		auto key = InputManager::mInstance->mIdKeyBindings.at(action);
+		auto key = InputManager::mInstance->mKeyBindings.at(action);
 		return (key.pressed && ! key.prevPressed);
 	}
 	catch (const std::out_of_range& oor) {}
 
 	try
 	{
-		auto button = InputManager::mInstance->mIdMouseBindings.at(action);
+		auto button = InputManager::mInstance->mMouseBindings.at(action);
 		return (button.pressed && ! button.prevPressed);
 	}
 	catch (const std::out_of_range& oor) {}
@@ -110,37 +87,18 @@ bool InputManager::IsPressed(const size_t action)
 	return false;
 }
 
-bool InputManager::IsPressed(const string& action)
+bool InputManager::IsHeld(const Identifier& action)
 {
 	try
 	{
-		auto key = InputManager::mInstance->mStringKeyBindings.at(action);
-		return (key.pressed && ! key.prevPressed);
-	}
-	catch (const std::out_of_range& oor) {}
-
-	try
-	{
-		auto button = InputManager::mInstance->mStringMouseBindings.at(action);
-		return (button.pressed && ! button.prevPressed);
-	}
-	catch (const std::out_of_range& oor) {}
-
-	return false;
-}
-
-bool InputManager::IsHeld(const size_t action)
-{
-	try
-	{
-		auto key = InputManager::mInstance->mIdKeyBindings.at(action);
+		auto key = InputManager::mInstance->mKeyBindings.at(action);
 		return key.pressed;
 	}
 	catch (const std::out_of_range& oor) {}
 
 	try
 	{
-		auto button = InputManager::mInstance->mIdMouseBindings.at(action);
+		auto button = InputManager::mInstance->mMouseBindings.at(action);
 		return button.pressed;
 	}
 	catch (const std::out_of_range& oor) {}
@@ -148,56 +106,18 @@ bool InputManager::IsHeld(const size_t action)
 	return false;
 }
 
-bool InputManager::IsHeld(const string& action)
+bool InputManager::IsReleased(const Identifier& action)
 {
 	try
 	{
-		auto key = InputManager::mInstance->mStringKeyBindings.at(action);
-		return key.pressed;
-	}
-	catch (const std::out_of_range& oor) {}
-
-	try
-	{
-		auto button = InputManager::mInstance->mStringMouseBindings.at(action);
-		return button.pressed;
-	}
-	catch (const std::out_of_range& oor) {}
-
-	return false;
-}
-
-bool InputManager::IsReleased(const size_t action)
-{
-	try
-	{
-		auto key = InputManager::mInstance->mIdKeyBindings.at(action);
+		auto key = InputManager::mInstance->mKeyBindings.at(action);
 		return (! key.pressed && key.prevPressed);
 	}
 	catch (const std::out_of_range& oor) {}
 
 	try
 	{
-		auto button = InputManager::mInstance->mIdMouseBindings.at(action);
-		return (! button.pressed && button.prevPressed);
-	}
-	catch (const std::out_of_range& oor) {}
-
-	return false;
-}
-
-bool InputManager::IsReleased(const string& action)
-{
-	try
-	{
-		auto key = InputManager::mInstance->mStringKeyBindings.at(action);
-		return (! key.pressed && key.prevPressed);
-	}
-	catch (const std::out_of_range& oor) {}
-
-	try
-	{
-		auto button = InputManager::mInstance->mStringMouseBindings.at(action);
+		auto button = InputManager::mInstance->mMouseBindings.at(action);
 		return (! button.pressed && button.prevPressed);
 	}
 	catch (const std::out_of_range& oor) {}

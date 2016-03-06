@@ -1,10 +1,9 @@
-// Copyright (c) 2015 Juan Delgado (JuDelCo)
+// Copyright (c) 2016 Juan Delgado (JuDelCo)
 // License: GPLv3 License
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
 #include "PrefabManager.hpp"
 #include "../Resources/Prefab.hpp"
-#include "../ECS/Entity.hpp"
 #include "../Components/Transform.hpp"
 #include "../Resources/DebugLog.hpp"
 
@@ -32,47 +31,35 @@ void PrefabManager::Unload()
 	mPrefabs.clear();
 }
 
-auto PrefabManager::Instantiate(const string& prefabName) -> Entity*
+auto PrefabManager::Instantiate(Pool* pool, const Identifier& id) -> EntityPtr
 {
-	for(auto& iPrefab : PrefabManager::mInstance->mPrefabs)
+	for(const auto &iPrefab : PrefabManager::mInstance->mPrefabs)
 	{
-		if(iPrefab.second->GetName() == prefabName)
+		if(iPrefab.second->GetId() == id)
 		{
-			return iPrefab.second->Create();
+			return iPrefab.second->Create(pool);
 		}
 	}
 
-	DebugLog::Write("Warning: PrefabManager.Instantiate: No prefab found with name %s", prefabName.c_str());
+	DebugLog::Write("Warning: PrefabManager.Instantiate: No prefab found with id %s", id.GetStringRef().c_str());
 
 	return nullptr;
 }
 
-auto PrefabManager::Instantiate(const string& prefabName, const string& name) -> Entity*
+auto PrefabManager::Instantiate(Pool* pool, const Identifier& id, const vec3 position, const quat orientation) -> EntityPtr
 {
-	auto entity = Instantiate(prefabName);
+	auto entity = Instantiate(pool, id);
 
 	if(entity)
 	{
-		entity->SetName(name);
+		entity->GetTransform()->SetLocalPosition(position);
+		entity->GetTransform()->SetLocalRotation(orientation);
 	}
 
 	return entity;
 }
 
-auto PrefabManager::Instantiate(const string& prefabName, const vec3 position, const quat orientation) -> Entity*
-{
-	auto entity = Instantiate(prefabName);
-
-	if(entity)
-	{
-		entity->GetComponent<Transform>()->SetLocalPosition(position);
-		entity->GetComponent<Transform>()->SetLocalRotation(orientation);
-	}
-
-	return entity;
-}
-
-void PrefabManager::Add(shared_ptr<Prefab> prefab, type_index type)
+void PrefabManager::Add(std::shared_ptr<Prefab> prefab, std::type_index type)
 {
 	if(PrefabManager::mInstance->mPrefabs.count(type) != 0)
 	{
@@ -81,28 +68,29 @@ void PrefabManager::Add(shared_ptr<Prefab> prefab, type_index type)
 		return;
 	}
 
-	PrefabManager::mInstance->mPrefabs[type] = std::move(prefab);
+	PrefabManager::mInstance->mPrefabs[type] = prefab;
 }
 
-auto PrefabManager::Instantiate(Prefab* prefab) -> Entity*
+auto PrefabManager::Instantiate(Pool* pool, Prefab* prefab) -> EntityPtr
 {
 	if(prefab)
 	{
-		return prefab->Create();
+		return prefab->Create(pool);
 	}
 
 	return nullptr;
 }
 
-auto PrefabManager::Instantiate(Prefab* prefab, const string& name) -> Entity*
+auto PrefabManager::Instantiate(Pool* pool, Prefab* prefab, const vec3 position, const quat orientation) -> EntityPtr
 {
 	if(prefab)
 	{
-		auto entity = prefab->Create();
+		auto entity = prefab->Create(pool);
 
 		if(entity)
 		{
-			entity->SetName(name);
+			entity->GetTransform()->SetLocalPosition(position);
+			entity->GetTransform()->SetLocalRotation(orientation);
 		}
 
 		return entity;
@@ -111,25 +99,7 @@ auto PrefabManager::Instantiate(Prefab* prefab, const string& name) -> Entity*
 	return nullptr;
 }
 
-auto PrefabManager::Instantiate(Prefab* prefab, const vec3 position, const quat orientation) -> Entity*
-{
-	if(prefab)
-	{
-		auto entity = prefab->Create();
-
-		if(entity)
-		{
-			entity->GetComponent<Transform>()->SetLocalPosition(position);
-			entity->GetComponent<Transform>()->SetLocalRotation(orientation);
-		}
-
-		return entity;
-	}
-
-	return nullptr;
-}
-
-auto PrefabManager::Get(type_index type) -> Prefab*
+auto PrefabManager::Get(std::type_index type) -> Prefab*
 {
 	if(PrefabManager::mInstance->mPrefabs.count(type) != 0)
 	{

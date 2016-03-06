@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Juan Delgado (JuDelCo)
+// Copyright (c) 2016 Juan Delgado (JuDelCo)
 // License: GPLv3 License
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
@@ -6,15 +6,15 @@
 
 namespace JuEngine
 {
-TimerCallback::TimerCallback(const float timeDelay, const Callback callback, const bool loop) :
+TimerCallback::TimerCallback(const float timeDelay, const Callback& callback, const bool loop) :
 	TimerCallback(Time::Seconds(timeDelay), callback, loop)
 {
 }
 
-TimerCallback::TimerCallback(const Time timeDelay, const Callback callback, const bool loop) :
+TimerCallback::TimerCallback(const Time timeDelay, const Callback& callback, const bool loop) :
 	mLoops(loop), mTimeDelay(timeDelay), mCallback(callback)
 {
-	this->SetName("timerCallback");
+	this->SetId("timerCallback");
 }
 
 void TimerCallback::Update()
@@ -70,7 +70,7 @@ Time TimerCallback::GetTimeRemaining() const
 	Time timeElapsed = Timer::GetTimeElapsed();
 	Time timeRemaining = mTimeDelay - timeElapsed;
 
-	if(timeRemaining.AsSeconds() < 0.0f)
+	if(timeRemaining.AsSeconds() < 0.f)
 	{
 		timeRemaining = Time::Zero;
 	}

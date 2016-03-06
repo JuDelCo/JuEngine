@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Juan Delgado (JuDelCo)
+// Copyright (c) 2016 Juan Delgado (JuDelCo)
 // License: GPLv3 License
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
@@ -28,77 +28,77 @@ void Shader::DisableShaders()
 	glUseProgram(0);
 }
 
-void Shader::SetUniform(const string& name, const float x)
+void Shader::SetUniform(const std::string& name, const float x)
 {
 	auto location = GetUniformLocation(mShaderProgram, name);
 	glUniform1f(location, x);
 }
 
-void Shader::SetUniform(const string& name, const float x, const float y)
+void Shader::SetUniform(const std::string& name, const float x, const float y)
 {
 	auto location = GetUniformLocation(mShaderProgram, name);
 	glUniform2f(location, x, y);
 }
 
-void Shader::SetUniform(const string& name, const float x, const float y, const float z)
+void Shader::SetUniform(const std::string& name, const float x, const float y, const float z)
 {
 	auto location = GetUniformLocation(mShaderProgram, name);
 	glUniform3f(location, x, y, z);
 }
 
-void Shader::SetUniform(const string& name, const float x, const float y, const float z, const float w)
+void Shader::SetUniform(const std::string& name, const float x, const float y, const float z, const float w)
 {
 	auto location = GetUniformLocation(mShaderProgram, name);
 	glUniform4f(location, x, y, z, w);
 }
 
-void Shader::SetUniform(const string& name, const vec2 vector)
+void Shader::SetUniform(const std::string& name, const vec2 vector)
 {
 	auto location = GetUniformLocation(mShaderProgram, name);
 	glUniform2fv(location, 1, Math::GetDataPtr(vector));
 }
 
-void Shader::SetUniform(const string& name, const vec3 vector)
+void Shader::SetUniform(const std::string& name, const vec3 vector)
 {
 	auto location = GetUniformLocation(mShaderProgram, name);
 	glUniform3fv(location, 1, Math::GetDataPtr(vector));
 }
 
-void Shader::SetUniform(const string& name, const vec4 vector)
+void Shader::SetUniform(const std::string& name, const vec4 vector)
 {
 	auto location = GetUniformLocation(mShaderProgram, name);
 	glUniform4fv(location, 1, Math::GetDataPtr(vector));
 }
 
-void Shader::SetUniform(const string& name, const mat3 matrix)
+void Shader::SetUniform(const std::string& name, const mat3 matrix)
 {
 	auto location = GetUniformLocation(mShaderProgram, name);
 	glUniformMatrix3fv(location, 1, GL_FALSE, Math::GetDataPtr(matrix));
 }
 
-void Shader::SetUniform(const string& name, const mat4 matrix)
+void Shader::SetUniform(const std::string& name, const mat4 matrix)
 {
 	auto location = GetUniformLocation(mShaderProgram, name);
 	glUniformMatrix4fv(location, 1, GL_FALSE, Math::GetDataPtr(matrix));
 }
 
-void Shader::BindUniformBlock(const string& name, const GLuint mUniformBufferBindingIndex)
+void Shader::BindUniformBlock(const std::string& name, const GLuint mUniformBufferBindingIndex)
 {
 	auto location = GetUniformBlockLocation(mShaderProgram, name);
 	glUniformBlockBinding(mShaderProgram, location, mUniformBufferBindingIndex);
 }
 
-void Shader::AddShader(const GLenum shaderType, const string& shaderPath)
+void Shader::AddShader(const GLenum shaderType, const std::string& shaderPath)
 {
 	mShaderFiles[shaderType] = shaderPath;
 }
 
 void Shader::Reload(const bool forceLoad)
 {
-	vector<GLuint> shaders;
+	std::vector<GLuint> shaders;
 	bool errors = false;
 
-	for(auto shaderFile : mShaderFiles)
+	for(const auto &shaderFile : mShaderFiles)
 	{
 		auto shader = Shader::CreateShader(shaderFile.first, shaderFile.second);
 
@@ -115,7 +115,7 @@ void Shader::Reload(const bool forceLoad)
 
 	if(errors)
 	{
-		for(auto shader : shaders)
+		for(const auto &shader : shaders)
 		{
 			glDeleteShader(shader);
 		}
@@ -138,7 +138,7 @@ void Shader::Reload(const bool forceLoad)
 
 		mShaderProgram = shaderProgram;
 
-		// TODO: Shader: UBO indexes -> Renderer (Forward Renderer)
+		// TODO: Shader: UBO indexes -> Renderer (ForwardRenderer)
 		BindUniformBlock("GlobalMatrices", 0);
 		BindUniformBlock("World", 1);
 		BindUniformBlock("Material", 2);
@@ -163,7 +163,7 @@ void Shader::PrintAttributeNames()
 		glGetProgramResourceName(mShaderProgram, GL_PROGRAM_INPUT, attrIndex, values[0], NULL, buffer);
 		DebugLog::Write("> %s", buffer);
 
-		string uTypeText;
+		std::string uTypeText;
 		GLuint uTypeSize;
 
 		switch(values[1])
@@ -223,7 +223,7 @@ void Shader::PrintUniformNames()
 		glGetProgramResourceName(mShaderProgram, GL_UNIFORM, uniformIndex, values[0], NULL, buffer);
 		DebugLog::Write("> %s", buffer);
 
-		string uTypeText;
+		std::string uTypeText;
 		GLuint uTypeSize;
 
 		switch(values[1])
@@ -302,7 +302,7 @@ void Shader::PrintUniformBlockNames()
 			glGetProgramResourceName(mShaderProgram, GL_UNIFORM, uniformIndex, valuesUnif[0], NULL, bufferUnif);
 			DebugLog::Write("     - %s", bufferUnif);
 
-			string uTypeText;
+			std::string uTypeText;
 			GLuint uTypeSize;
 
 			switch(valuesUnif[1])
@@ -430,31 +430,31 @@ void Shader::PrintUniformBlockNames()
 	}*/
 }
 
-auto Shader::ReadFile(const string& shaderPath) -> const string&
+auto Shader::ReadFile(const std::string& shaderPath) -> const std::string
 {
-	// TODO: Shader: Revisar: https://stackoverflow.com/questions/2602013/read-whole-ascii-file-into-c-stdstring
-	string* shaderBuffer = new string();
+	std::string shaderBuffer;
 	std::ifstream stream(shaderPath);
 
 	if(stream.is_open())
 	{
 		stream.seekg(0, std::ios::end);
-		shaderBuffer->reserve(stream.tellg());
+		shaderBuffer.reserve(stream.tellg());
 		stream.seekg(0, std::ios::beg);
 
-		shaderBuffer->assign((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
+		shaderBuffer.assign((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
 		stream.close();
 	}
 
-	if(shaderBuffer->empty())
+	if(shaderBuffer.empty())
 	{
 		DebugLog::Write("Shader file not found or empty: %s", shaderPath.c_str());
 	}
 
-	return std::move(*shaderBuffer);
+	// TODO: Shader: Return string by reference, not by copy
+	return shaderBuffer;
 }
 
-GLuint Shader::CreateShader(const GLenum shaderType, const string& shaderPath)
+GLuint Shader::CreateShader(const GLenum shaderType, const std::string& shaderPath)
 {
 	GLuint shaderID = glCreateShader(shaderType);
 
@@ -492,11 +492,11 @@ GLuint Shader::CreateShader(const GLenum shaderType, const string& shaderPath)
 	return shaderID;
 }
 
-GLuint Shader::CreateProgram(const vector<GLuint>& shaders)
+GLuint Shader::CreateProgram(const std::vector<GLuint>& shaders)
 {
 	GLuint programID = glCreateProgram();
 
-	for(auto shader : shaders)
+	for(const auto &shader : shaders)
 	{
 		glAttachShader(programID, shader);
 	}
@@ -521,7 +521,7 @@ GLuint Shader::CreateProgram(const vector<GLuint>& shaders)
 		programID = 0;
 	}
 
-	for(auto shader : shaders)
+	for(const auto &shader : shaders)
 	{
 		glDetachShader(programID, shader);
 		glDeleteShader(shader);
@@ -530,12 +530,12 @@ GLuint Shader::CreateProgram(const vector<GLuint>& shaders)
 	return programID;
 }
 
-GLint Shader::GetUniformLocation(const GLuint shaderProgram, const string& name)
+GLint Shader::GetUniformLocation(const GLuint shaderProgram, const std::string& name)
 {
 	return glGetUniformLocation(shaderProgram, name.c_str());
 }
 
-GLint Shader::GetUniformBlockLocation(const GLuint shaderProgram, const string& name)
+GLint Shader::GetUniformBlockLocation(const GLuint shaderProgram, const std::string& name)
 {
 	return glGetUniformBlockIndex(shaderProgram, name.c_str());
 }

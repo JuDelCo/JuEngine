@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Juan Delgado (JuDelCo)
+// Copyright (c) 2016 Juan Delgado (JuDelCo)
 // License: GPLv3 License
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
@@ -86,37 +86,37 @@ inline vec3 __attribute__((always_inline)) Cross(const vec3 x, const vec3 y)
 
 inline vec2 __attribute__((always_inline)) Normalize(const vec2 v)
 {
-	return v * (float)(1.0f / sqrt(Dot(v, v)));
+	return v * (float)(1.f / sqrt(Dot(v, v)));
 }
 
 inline vec3 __attribute__((always_inline)) Normalize(const vec3 v)
 {
-	return v * (float)(1.0f / sqrt(Dot(v, v)));
+	return v * (float)(1.f / sqrt(Dot(v, v)));
 }
 
 inline vec4 __attribute__((always_inline)) Normalize(const vec4 v)
 {
-	return v * (float)(1.0f / sqrt(Dot(v, v)));
+	return v * (float)(1.f / sqrt(Dot(v, v)));
 }
 
 inline quat __attribute__((always_inline)) Normalize(const quat q)
 {
-	return q * (float)(1.0f / sqrt(Dot(q, q)));
+	return q * (float)(1.f / sqrt(Dot(q, q)));
 }
 
 inline float __attribute__((always_inline)) Pitch(const quat q)
 {
-	return atan2(2.0f * (q.y * q.z + q.w * q.x), q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z);
+	return atan2(2.f * (q.y * q.z + q.w * q.x), q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z);
 }
 
 inline float __attribute__((always_inline)) Yaw(const quat q)
 {
-	return asin(-2.0f * (q.x * q.z - q.w * q.y));
+	return asin(-2.f * (q.x * q.z - q.w * q.y));
 }
 
 inline float __attribute__((always_inline)) Roll(const quat q)
 {
-	return atan2(2.0f * (q.x * q.y + q.w * q.z), q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z);
+	return atan2(2.f * (q.x * q.y + q.w * q.z), q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z);
 }
 
 inline vec3 __attribute__((always_inline)) EulerAngles(const quat q)
@@ -141,30 +141,30 @@ inline quat __attribute__((always_inline)) MatToQuat(const mat3 m)
 
 inline float __attribute__((always_inline)) Mix(const float x, const float y, float alpha)
 {
-	if(alpha > 1.0f) alpha = 1.0f;
+	if(alpha > 1.f) alpha = 1.f;
 
-	return x * (1.0f - alpha) + y * alpha;
+	return x * (1.f - alpha) + y * alpha;
 }
 
 inline vec2 __attribute__((always_inline)) Mix(const vec2 x, const vec2 y, float alpha)
 {
-	if(alpha > 1.0f) alpha = 1.0f;
+	if(alpha > 1.f) alpha = 1.f;
 
-	return x * (1.0f - alpha) + y * alpha;
+	return x * (1.f - alpha) + y * alpha;
 }
 
 inline vec3 __attribute__((always_inline)) Mix(const vec3 x, const vec3 y, float alpha)
 {
-	if(alpha > 1.0f) alpha = 1.0f;
+	if(alpha > 1.f) alpha = 1.f;
 
-	return x * (1.0f - alpha) + y * alpha;
+	return x * (1.f - alpha) + y * alpha;
 }
 
 inline vec4 __attribute__((always_inline)) Mix(const vec4 x, const vec4 y, float alpha)
 {
-	if(alpha > 1.0f) alpha = 1.0f;
+	if(alpha > 1.f) alpha = 1.f;
 
-	return x * (1.0f - alpha) + y * alpha;
+	return x * (1.f - alpha) + y * alpha;
 }
 
 inline quat __attribute__((always_inline)) Lerp(const quat start, const quat end, float alpha)
@@ -188,9 +188,9 @@ inline quat __attribute__((always_inline)) Slerp(const quat start, const quat en
 		return Lerp(start, end, alpha);
 	}
 
-	if(alpha > 1.0f) alpha = 1.0f;
+	if(alpha > 1.f) alpha = 1.f;
 
-	Clamp(dot, -1.0f, 1.0f);       // Robustness: Stay within domain of acos()
+	Clamp(dot, -1.f, 1.f);       // Robustness: Stay within domain of acos()
 	float theta_0 = acosf(dot);    // theta_0 = angle between input vectors
 	float theta = theta_0 * alpha; // theta = angle between v0 (start) and result
 
@@ -210,7 +210,7 @@ inline quat __attribute__((always_inline)) LookAt(const vec3 posA, const vec3 po
 	vec3 aimY = Normalize(worldUp - aimZ * Dot(worldUp, aimZ));
 	vec3 aimX = Normalize(Cross(aimY, aimZ));
 
-	mat3 aimRotationMatrix = mat3(1.0f);
+	mat3 aimRotationMatrix = mat3(1.f);
 	aimRotationMatrix[0] = aimX;
 	aimRotationMatrix[1] = aimY;
 	aimRotationMatrix[2] = aimZ;
@@ -218,27 +218,27 @@ inline quat __attribute__((always_inline)) LookAt(const vec3 posA, const vec3 po
 	return MatToQuat(aimRotationMatrix);
 }
 
-inline string __attribute__((always_inline)) ToString(const vec2 v)
+inline std::string __attribute__((always_inline)) ToString(const vec2 v)
 {
 	return glm::to_string(v);
 }
 
-inline string __attribute__((always_inline)) ToString(const vec3 v)
+inline std::string __attribute__((always_inline)) ToString(const vec3 v)
 {
 	return glm::to_string(v);
 }
 
-inline string __attribute__((always_inline)) ToString(const vec4 v)
+inline std::string __attribute__((always_inline)) ToString(const vec4 v)
 {
 	return glm::to_string(v);
 }
 
-inline string __attribute__((always_inline)) ToString(const mat3 m)
+inline std::string __attribute__((always_inline)) ToString(const mat3 m)
 {
 	return glm::to_string(m);
 }
 
-inline string __attribute__((always_inline)) ToString(const mat4 m)
+inline std::string __attribute__((always_inline)) ToString(const mat4 m)
 {
 	return glm::to_string(m);
 }

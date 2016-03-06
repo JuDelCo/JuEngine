@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Juan Delgado (JuDelCo)
+// Copyright (c) 2016 Juan Delgado (JuDelCo)
 // License: GPLv3 License
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
@@ -7,6 +7,7 @@
 namespace JuEngine
 {
 using std::chrono::microseconds;
+using std::chrono::high_resolution_clock;
 
 Clock::Clock() : IObject("clock")
 {

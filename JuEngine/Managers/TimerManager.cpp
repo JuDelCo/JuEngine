@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Juan Delgado (JuDelCo)
+// Copyright (c) 2016 Juan Delgado (JuDelCo)
 // License: GPLv3 License
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
@@ -24,29 +24,29 @@ TimerManager::~TimerManager()
 	TimerManager::mInstance = nullptr;
 }
 
-auto TimerManager::Create(const string& name, const bool autoStart) -> Timer*
+auto TimerManager::Create(const Identifier& id, const bool autoStart) -> Timer*
 {
-	if(TimerManager::mInstance->mTimers.count(name) != 0)
+	if(TimerManager::mInstance->mTimers.count(id) != 0)
 	{
-		DebugLog::Write("Warning, attempted to create a timer with name '%s'. The timer name is already being used", name.c_str());
+		DebugLog::Write("Warning, attempted to create a timer with id '%s'. The timer id is already being used", id.GetStringRef().c_str());
 
-		return Get(name);
+		return Get(id);
 	}
 
-	TimerManager::mInstance->mTimers[name] = std::make_shared<Timer>(autoStart);
-	TimerManager::mInstance->mTimers.at(name)->SetName(name);
+	TimerManager::mInstance->mTimers[id] = std::make_shared<Timer>(autoStart);
+	TimerManager::mInstance->mTimers.at(id)->SetId(id);
 
-	return TimerManager::mInstance->mTimers.at(name).get();
+	return TimerManager::mInstance->mTimers.at(id).get();
 }
 
-auto TimerManager::Get(const string& name) -> Timer*
+auto TimerManager::Get(const Identifier& id) -> Timer*
 {
-	if(TimerManager::mInstance->mTimers.count(name) != 0)
+	if(TimerManager::mInstance->mTimers.count(id) != 0)
 	{
-		return TimerManager::mInstance->mTimers.at(name).get();
+		return TimerManager::mInstance->mTimers.at(id).get();
 	}
 
-	DebugLog::Write("Warning: TimerManager.Get: No timer found with name %s", name.c_str());
+	DebugLog::Write("Warning: TimerManager.Get: No timer found with id %s", id.GetStringRef().c_str());
 
 	return nullptr;
 }

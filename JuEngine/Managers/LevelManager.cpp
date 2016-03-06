@@ -1,12 +1,14 @@
-// Copyright (c) 2015 Juan Delgado (JuDelCo)
+// Copyright (c) 2016 Juan Delgado (JuDelCo)
 // License: GPLv3 License
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
 #include "LevelManager.hpp"
-#include "../Resources/Level.hpp"
-#include "../ECS/EntityManager.hpp"
 #include "TimerManager.hpp"
-#include "TimerCallbackManager.hpp"
+#include "PoolManager.hpp"
+#include "SystemManager.hpp"
+#include "WindowManager.hpp"
+#include "../Resources/Level.hpp"
+#include "../Resources/Renderer.hpp"
 #include "../Resources/DebugLog.hpp"
 
 namespace JuEngine
@@ -25,6 +27,11 @@ LevelManager::LevelManager() : IObject("levelManager")
 
 LevelManager::~LevelManager()
 {
+	if(LevelManager::mInstance->mRequestedLoadLevelName != nullptr)
+	{
+		delete LevelManager::mInstance->mRequestedLoadLevelName;
+	}
+
 	LevelManager::mInstance = nullptr;
 }
 
@@ -35,17 +42,17 @@ void LevelManager::Update()
 		return;
 	}
 
-	shared_ptr<Level> level;
+	std::shared_ptr<Level> level;
 
-	if(mRequestedLoadLevelName.empty())
+	if(mRequestedLoadLevelName == nullptr)
 	{
 		level = mLevels.at(mRequestedLoadLevelType);
 	}
 	else
 	{
-		for(auto& iLevel : mLevels)
+		for(const auto &iLevel : mLevels)
 		{
-			if(iLevel.second->GetName() == mRequestedLoadLevelName)
+			if(iLevel.second->GetId() == *mRequestedLoadLevelName)
 			{
 				level = iLevel.second;
 				break;
@@ -62,6 +69,8 @@ void LevelManager::Update()
 		level->Load();
 	}
 
+	SystemManager::Initialize();
+
 	mRequestedLoadLevel = false;
 	mLoadAdditive = false;
 }
@@ -71,16 +80,21 @@ void LevelManager::Unload()
 	mLevels.clear();
 }
 
-void LevelManager::LoadLevel(const string& name)
+void LevelManager::LoadLevel(const Identifier& id)
 {
 	LevelManager::mInstance->mRequestedLoadLevelType = typeid(void);
 	LevelManager::mInstance->mRequestedLoadLevel = false;
 
-	for(auto& iLevel : LevelManager::mInstance->mLevels)
+	for(const auto &iLevel : LevelManager::mInstance->mLevels)
 	{
-		if(iLevel.second->GetName() == name)
+		if(iLevel.second->GetId() == id)
 		{
-			LevelManager::mInstance->mRequestedLoadLevelName = name;
+			if(LevelManager::mInstance->mRequestedLoadLevelName != nullptr)
+			{
+				delete LevelManager::mInstance->mRequestedLoadLevelName;
+			}
+
+			LevelManager::mInstance->mRequestedLoadLevelName = new Identifier(id);
 			LevelManager::mInstance->mLoadAdditive = false;
 			LevelManager::mInstance->mRequestedLoadLevel = true;
 
@@ -89,16 +103,21 @@ void LevelManager::LoadLevel(const string& name)
 	}
 }
 
-void LevelManager::LoadLevelAdditive(const string& name)
+void LevelManager::LoadLevelAdditive(const Identifier& id)
 {
 	LevelManager::mInstance->mRequestedLoadLevelType = typeid(void);
 	LevelManager::mInstance->mRequestedLoadLevel = false;
 
-	for(auto& iLevel : LevelManager::mInstance->mLevels)
+	for(const auto &iLevel : LevelManager::mInstance->mLevels)
 	{
-		if(iLevel.second->GetName() == name)
+		if(iLevel.second->GetId() == id)
 		{
-			LevelManager::mInstance->mRequestedLoadLevelName = name;
+			if(LevelManager::mInstance->mRequestedLoadLevelName != nullptr)
+			{
+				delete LevelManager::mInstance->mRequestedLoadLevelName;
+			}
+
+			LevelManager::mInstance->mRequestedLoadLevelName = new Identifier(id);
 			LevelManager::mInstance->mLoadAdditive = true;
 			LevelManager::mInstance->mRequestedLoadLevel = true;
 
@@ -109,12 +128,13 @@ void LevelManager::LoadLevelAdditive(const string& name)
 
 void LevelManager::UnloadLevel()
 {
-	EntityManager::Unload();
+	SystemManager::Reset();
+	PoolManager::Unload();
+	WindowManager::GetRenderer()->Reset();
 	TimerManager::Unload();
-	TimerCallbackManager::Unload();
 }
 
-void LevelManager::Add(shared_ptr<Level> level, type_index type)
+void LevelManager::Add(std::shared_ptr<Level> level, std::type_index type)
 {
 	if(LevelManager::mInstance->mLevels.count(type) != 0)
 	{
@@ -123,14 +143,14 @@ void LevelManager::Add(shared_ptr<Level> level, type_index type)
 		return;
 	}
 
-	LevelManager::mInstance->mLevels[type] = std::move(level);
+	LevelManager::mInstance->mLevels[type] = level;
 }
 
 void LevelManager::LoadLevel(Level* level)
 {
 	if(level)
 	{
-		LevelManager::LoadLevel(level->GetName());
+		LevelManager::LoadLevel(level->GetId());
 	}
 }
 
@@ -138,11 +158,11 @@ void LevelManager::LoadLevelAdditive(Level* level)
 {
 	if(level)
 	{
-		LevelManager::LoadLevelAdditive(level->GetName());
+		LevelManager::LoadLevelAdditive(level->GetId());
 	}
 }
 
-auto LevelManager::Get(type_index type) -> Level*
+auto LevelManager::Get(std::type_index type) -> Level*
 {
 	if(LevelManager::mInstance->mLevels.count(type) != 0)
 	{

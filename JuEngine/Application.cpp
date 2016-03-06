@@ -1,9 +1,20 @@
-// Copyright (c) 2015 Juan Delgado (JuDelCo)
+// Copyright (c) 2016 Juan Delgado (JuDelCo)
 // License: GPLv3 License
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
 #include "Application.hpp"
-#include "Includes.hpp"
+#include "Managers/AppTimeManager.hpp"
+#include "Managers/InputManager.hpp"
+#include "Managers/LevelManager.hpp"
+#include "Managers/MaterialManager.hpp"
+#include "Managers/MeshManager.hpp"
+#include "Managers/PoolManager.hpp"
+#include "Managers/PrefabManager.hpp"
+#include "Managers/ShaderManager.hpp"
+#include "Managers/SystemManager.hpp"
+#include "Managers/TimerManager.hpp"
+#include "Managers/WindowManager.hpp"
+#include "Resources/ForwardRenderer.hpp"
 #include <thread>
 
 namespace JuEngine
@@ -19,21 +30,21 @@ Application::Application() : IObject("application")
 
 	Application::mInstance = this;
 
-	SetFixedInterval(50.0f);
-	SetFrameInterval(60.0f);
-	SetEventInterval(30.0f);
+	SetFixedInterval(50.f);
+	SetFrameInterval(60.f);
+	SetEventInterval(30.f);
 
-	mWindowManager = unique_ptr<WindowManager>(new WindowManager());
-	mAppTimeManager = unique_ptr<AppTimeManager>(new AppTimeManager());
-	mInputManager = unique_ptr<InputManager>(new InputManager());
-	mEntityManager = unique_ptr<EntityManager>(new EntityManager());
-	mTimerManager = unique_ptr<TimerManager>(new TimerManager());
-	mTimerCallbackManager = unique_ptr<TimerCallbackManager>(new TimerCallbackManager());
-	mPrefabManager = unique_ptr<PrefabManager>(new PrefabManager());
-	mMaterialManager = unique_ptr<MaterialManager>(new MaterialManager());
-	mMeshManager = unique_ptr<MeshManager>(new MeshManager());
-	mShaderManager = unique_ptr<ShaderManager>(new ShaderManager());
-	mLevelManager = unique_ptr<LevelManager>(new LevelManager());
+	mWindowManager = std::unique_ptr<WindowManager>(new WindowManager());
+	mSystemManager = std::unique_ptr<SystemManager>(new SystemManager());
+	mAppTimeManager = std::unique_ptr<AppTimeManager>(new AppTimeManager());
+	mInputManager = std::unique_ptr<InputManager>(new InputManager());
+	mTimerManager = std::unique_ptr<TimerManager>(new TimerManager());
+	mPoolManager = std::unique_ptr<PoolManager>(new PoolManager());
+	mPrefabManager = std::unique_ptr<PrefabManager>(new PrefabManager());
+	mMaterialManager = std::unique_ptr<MaterialManager>(new MaterialManager());
+	mMeshManager = std::unique_ptr<MeshManager>(new MeshManager());
+	mShaderManager = std::unique_ptr<ShaderManager>(new ShaderManager());
+	mLevelManager = std::unique_ptr<LevelManager>(new LevelManager());
 
 	SystemInit();
 }
@@ -54,6 +65,7 @@ void Application::Run()
 	std::thread runThread([&]()
 	{
 		mWindowManager->SetActiveInThisThread(true);
+		mSystemManager->Initialize();
 
 		Timer fixedTimer;
 		Timer frameTimer;
@@ -73,7 +85,7 @@ if(!mIsRunning) DebugLog::Write("RunThread: Post-update");
 				fixedTimer.Reset();
 
 				mAppTimeManager->FixedUpdate();
-				mEntityManager->FixedUpdate();
+				mSystemManager->FixedExecute();
 			}
 
 if(!mIsRunning) DebugLog::Write("RunThread: Post-fixedUpdate");
@@ -84,8 +96,7 @@ if(!mIsRunning) DebugLog::Write("RunThread: Post-fixedUpdate");
 
 				mAppTimeManager->Update();
 				mInputManager->Update();
-				mEntityManager->Update();
-				mTimerCallbackManager->Update();
+				mSystemManager->Execute();
 				mWindowManager->Render();
 			}
 
@@ -127,41 +138,40 @@ void Application::Stop()
 
 void Application::SetFixedInterval(const float interval)
 {
-	if(interval > 1.0f)
+	if(interval > 1.f)
 	{
-		mFixedInterval = Time::Seconds(1.0f / interval);
+		mFixedInterval = Time::Seconds(1.f / interval);
 	}
 }
 
 void Application::SetFrameInterval(const float interval)
 {
-	if(interval > 1.0f)
+	if(interval > 1.f)
 	{
-		mFrameInterval = Time::Seconds(1.0f / interval);
+		mFrameInterval = Time::Seconds(1.f / interval);
 	}
 }
 
 void Application::SetEventInterval(const float interval)
 {
-	if(interval > 1.0f)
+	if(interval > 1.f)
 	{
-		mEventInterval = Time::Seconds(1.0f / interval);
+		mEventInterval = Time::Seconds(1.f / interval);
 	}
 }
 
 void Application::SystemInit()
 {
 	mWindowManager->Load();
-	mWindowManager->SetRenderer(new ForwardRenderer());
+	mWindowManager->SetRenderer(std::shared_ptr<Renderer>(new ForwardRenderer()));
 }
 
 void Application::SystemEnd()
 {
-	mEntityManager->Unload();
-	mTimerCallbackManager->Unload();
 	mTimerManager->Unload();
 	mLevelManager->Unload();
 	mPrefabManager->Unload();
+	mPoolManager->Unload();
 	mMaterialManager->Unload();
 	mShaderManager->Unload();
 	mMeshManager->Unload();

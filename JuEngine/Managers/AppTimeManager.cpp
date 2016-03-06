@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Juan Delgado (JuDelCo)
+// Copyright (c) 2016 Juan Delgado (JuDelCo)
 // License: GPLv3 License
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
@@ -30,11 +30,9 @@ void AppTimeManager::Update()
 	mFrameCount++;
 	mFpsCounter++;
 
-	// mFpsEstimated = (1.0f / mAppFrameTime.GetTimeElapsed());
-
-	if(mAppFrameTime.GetTimeElapsed().AsSeconds() > 1.0f)
+	if(mAppFrameTime.GetTimeElapsed().AsSeconds() > 1.f)
 	{
-		mAppFrameTime.AddTime(-1.0f);
+		mAppFrameTime.AddTime(-1.f);
 		mFps = mFpsCounter;
 		mFpsCounter = 0;
 	}

@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Juan Delgado (JuDelCo)
+// Copyright (c) 2016 Juan Delgado (JuDelCo)
 // License: GPLv3 License
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
@@ -11,24 +11,23 @@ namespace JuEngine
 {
 class JUENGINEAPI Time
 {
-public:
-	Time();
-	virtual ~Time() = default;
+	public:
+		Time();
 
-	auto AsSeconds() const -> float;
-	auto AsMilliseconds() const -> int32_t;
-	auto AsMicroseconds() const -> int64_t;
+		auto AsSeconds() const -> float;
+		auto AsMilliseconds() const -> int32_t;
+		auto AsMicroseconds() const -> int64_t;
 
-	static Time Seconds(const float amount);
-	static Time Milliseconds(const int32_t amount);
-	static Time Microseconds(const int64_t amount);
+		static Time Seconds(const float amount);
+		static Time Milliseconds(const int32_t amount);
+		static Time Microseconds(const int64_t amount);
 
-	static const Time Zero;
+		static const Time Zero;
 
-private:
-	explicit Time(const int64_t microseconds);
+	private:
+		explicit Time(const int64_t microseconds);
 
-	std::chrono::microseconds mMicroseconds;
+		std::chrono::microseconds mMicroseconds;
 };
 
 bool  operator ==(Time left, Time right);

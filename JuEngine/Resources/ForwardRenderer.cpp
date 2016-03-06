@@ -1,24 +1,25 @@
-// Copyright (c) 2015 Juan Delgado (JuDelCo)
+// Copyright (c) 2016 Juan Delgado (JuDelCo)
 // License: GPLv3 License
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
 #include "ForwardRenderer.hpp"
-#include "../ECS/EntityManager.hpp"
-#include "../Managers/WindowManager.hpp"
-#include "../ECS/Entity.hpp"
 #include "Shader.hpp"
+
 #include "../Components/Camera.hpp"
 #include "../Components/Light.hpp"
 #include "../Components/MeshRenderer.hpp"
 #include "../Components/Transform.hpp"
 #include "../Components/World.hpp"
-#include "../Math.hpp"
+#include "../Entity/Pool.hpp"
+
+#include "../Managers/WindowManager.hpp"
+#include "../Resources/Math.hpp"
 
 namespace JuEngine
 {
 ForwardRenderer::ForwardRenderer()
 {
-	SetName("forwardRenderer");
+	SetId("forwardRenderer");
 
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
@@ -27,12 +28,12 @@ ForwardRenderer::ForwardRenderer()
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_TRUE);
 	glDepthFunc(GL_LEQUAL);
-	glDepthRange(0.0f, 1.0f);
+	glDepthRange(0.f, 1.f);
 
 	//glEnable(GL_DEPTH_CLAMP);
 
-	glClearColor(0.f, 0.f, 0.f, 1.0f);
-	glClearDepth(1.0f);
+	glClearColor(0.f, 0.f, 0.f, 1.f);
+	glClearDepth(1.f);
 
 	// ----------------
 
@@ -81,34 +82,62 @@ ForwardRenderer::~ForwardRenderer()
 
 void ForwardRenderer::Render()
 {
-	float gammaCorrection = 1.0f / EntityManager::GetWorld()->GetGammaCorrection();
+	if(mPools.size() == 0)
+	{
+		return;
+	}
 
-	// Actualizamos el Uniform Block "World"
-	glBindBuffer(GL_UNIFORM_BUFFER, mWorldUBO);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(vec3), Math::GetDataPtr(EntityManager::GetWorld()->GetAmbientColor()));
-	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(vec4), sizeof(float), &EntityManager::GetWorld()->GetAmbientIntensity());
-	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(vec4) + sizeof(float), sizeof(float), &EntityManager::GetWorld()->GetLightAttenuation());
-	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(vec4) + sizeof(float) * 2, sizeof(float), &gammaCorrection);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	// TODO: ForwardRenderer: Cache entities
+	std::vector<EntityPtr> cameras;
+	std::vector<EntityPtr> entities;
+	std::vector<EntityPtr> lights;
 
-	// Limpiamos los buffers de color y profundidad
-	auto skyColor = EntityManager::GetWorld()->GetSkyColor();
-	glClearColor(pow(skyColor.x,gammaCorrection), pow(skyColor.y,gammaCorrection), pow(skyColor.z,gammaCorrection), 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	for(const auto &pool : mPools)
+	{
+		auto poolCameras = pool->GetGroup(Matcher_AllOf(Transform, Camera))->GetEntities();
+		auto poolEntities = pool->GetGroup(Matcher_AllOf(Transform, MeshRenderer))->GetEntities();
+		auto poolLights = pool->GetGroup(Matcher_AllOf(Transform, Light))->GetEntities();
 
-	vec2 screenSize = WindowManager::GetSize();
+		cameras.insert(cameras.end(), poolCameras.begin(), poolCameras.end());
+		entities.insert(entities.end(), poolEntities.begin(), poolEntities.end());
+		lights.insert(lights.end(), poolLights.begin(), poolLights.end());
+	}
+
+	for(const auto &pool : mPools)
+	{
+		if(pool->GetGroup(Matcher_AllOf(World))->Count() == 0)
+		{
+			continue;
+		}
+
+		auto world = pool->GetGroup(Matcher_AllOf(World))->GetSingleEntity()->Get<World>();
+
+		float gammaCorrection = 1.f / world->GetGammaCorrection();
+
+		// Actualizamos el Uniform Block "World"
+		glBindBuffer(GL_UNIFORM_BUFFER, mWorldUBO);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(vec3), Math::GetDataPtr(world->GetAmbientColor()));
+		glBufferSubData(GL_UNIFORM_BUFFER, sizeof(vec4), sizeof(float), &world->GetAmbientIntensity());
+		glBufferSubData(GL_UNIFORM_BUFFER, sizeof(vec4) + sizeof(float), sizeof(float), &world->GetLightAttenuation());
+		glBufferSubData(GL_UNIFORM_BUFFER, sizeof(vec4) + sizeof(float) * 2, sizeof(float), &gammaCorrection);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+		// Limpiamos los buffers de color y profundidad
+		auto skyColor = world->GetSkyColor();
+		glClearColor(pow(skyColor.x,gammaCorrection), pow(skyColor.y,gammaCorrection), pow(skyColor.z,gammaCorrection), 1.f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		break;
+	}
 
 	// Dibujamos la escena por cada cámara activa
-	auto cameras = EntityManager::GetEntities<Camera>();
-	for(auto& cameraEntity : cameras)
+	for(const auto &cameraEntity : cameras)
 	{
-		// TODO: "continue;" si la cámara está inactiva (check por componente?)
-
 		// Actualizamos el viewport dependiendo de la cámara y el tamaño de la pantalla
-		auto camera = cameraEntity->GetComponent<Camera>();
-		camera->SetScreenSize(screenSize);
+		auto camera = cameraEntity->Get<Camera>();
+		camera->SetScreenSize(WindowManager::GetSize());
 		vec4 viewport = camera->GetViewport();
-		glViewport(viewport.x, viewport.y, (screenSize.x * viewport.z), (screenSize.y * viewport.w));
+		glViewport(viewport.x, viewport.y, (WindowManager::GetSize().x * viewport.z), (WindowManager::GetSize().y * viewport.w));
 
 		// Actualizamos el Uniform Block "GlobalMatrix"
 		glBindBuffer(GL_UNIFORM_BUFFER, mGlobalMatrixUBO);
@@ -117,13 +146,13 @@ void ForwardRenderer::Render()
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 		// Renderizamos todas las entidades con un meshRenderer
-		auto entities = EntityManager::GetEntities<MeshRenderer>();
-		for(auto& entity : entities)
+		for(const auto &entity : entities)
 		{
-			MeshRenderer* meshRenderer = entity->GetComponent<MeshRenderer>();
+			MeshRenderer* meshRenderer = entity->Get<MeshRenderer>();
 			Material* material = meshRenderer->GetMaterial();
 			Mesh* mesh = meshRenderer->GetMesh();
 
+			// TODO: ForwardRenderer: Check "material != nullptr"
 			vec3 diffuseColor = material->GetDiffuseColor();
 			vec3 specularColor = material->GetSpecularColor();
 			float shininessFactor = material->GetShininessFactor();
@@ -135,32 +164,37 @@ void ForwardRenderer::Render()
 			glBufferSubData(GL_UNIFORM_BUFFER, sizeof(vec4) * 2, sizeof(float), &shininessFactor);
 			glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-			// TODO: ForwardRenderer: Renderizar usando shader por defecto si no se encuentra
-			if(material)
+			// TODO: ForwardRenderer: Render using default shader if material is not defined
+			if(material != nullptr)
 			{
 				material->Use();
 
-				if(material->GetShader())
+				if(material->GetShader() != nullptr)
 				{
-					auto modelMatrix = entity->GetComponent<Transform>()->GetMatrix();
+					auto modelMatrix = entity->GetTransform()->GetMatrix();
 					material->GetShader()->SetUniform("modelToWorldMatrix", modelMatrix);
 
 					// =======================================================================
 					// TEMP: Lights
-					struct PerLight { vec4 lightPosType; vec4 lightIntensity; } lightsStruct[5];
-					auto lights = EntityManager::GetEntities<Light>();
+					// =======================================================================
 					unsigned int lightCounter = 0;
-					for(auto& light : lights)
+					struct PerLight { vec4 lightPosType; vec4 lightIntensity; } lightsStruct[5];
+					Light* light = nullptr;
+
+					for(const auto &lightEntity : lights)
 					{
+						light = lightEntity->Get<Light>();
+
 						lightsStruct[lightCounter].lightPosType = vec4(
-							cameraEntity->GetComponent<Transform>()->InverseTransformPoint(light->GetComponent<Transform>()->GetPosition()),
-							light->GetComponent<Light>()->GetType() == LightType::LIGHT_POINT ? 1.0f : 0.f);
-						lightsStruct[lightCounter].lightIntensity = vec4((
-							light->GetComponent<Light>()->GetColor() *
-							light->GetComponent<Light>()->GetIntensity()
-							), 1.0f);
-						lightCounter++;
-						if(lightCounter == 5) break;
+							cameraEntity->GetTransform()->InverseTransformPoint(lightEntity->GetTransform()->GetPosition()),
+							light->GetType() == LightType::LIGHT_POINT ? 1.f : 0.f
+						);
+						lightsStruct[lightCounter].lightIntensity = vec4((light->GetColor() * light->GetIntensity()), 1.f);
+
+						if(++lightCounter == 5)
+						{
+							break;
+						}
 					}
 					glBindBuffer(GL_UNIFORM_BUFFER, mLightUBO);
 					glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(vec4) * 2 * 5, &lightsStruct);
@@ -169,8 +203,8 @@ void ForwardRenderer::Render()
 				}
 			}
 
-			// TODO: ForwardRenderer: Renderizar modelo por defecto si no se encuentra
-			if(mesh)
+			// TODO: ForwardRenderer: Render default model if mesh is not defined
+			if(mesh != nullptr)
 			{
 				mesh->Use();
 

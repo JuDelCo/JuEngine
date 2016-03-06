@@ -1,4 +1,10 @@
 
+# Copyright (c) 2016 Juan Delgado (JuDelCo)
+# License: GPLv3 License
+# GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
+
+# ----------------------------------------------------------------------------------------------
+
 cmake_minimum_required(VERSION 3.0)
 
 if(NOT CONFIGURED_ONCE)

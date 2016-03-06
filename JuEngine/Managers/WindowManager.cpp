@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Juan Delgado (JuDelCo)
+// Copyright (c) 2016 Juan Delgado (JuDelCo)
 // License: GPLv3 License
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
@@ -41,18 +41,20 @@ WindowManager::~WindowManager()
 
 bool WindowManager::HasFocus()
 {
+	// TODO
 	// glfwGetWindowAttrib(WindowManager::mInstance->mWindow, GLFW_FOCUSED);
 
 	return WindowManager::mInstance->mWindowHasFocus;
 }
 
-void WindowManager::SetTitle(const string& title)
+void WindowManager::SetTitle(const std::string& title)
 {
 	glfwSetWindowTitle(WindowManager::mInstance->mWindow, title.c_str());
 }
 
 vec2 WindowManager::GetSize()
 {
+	// TODO
 	// int width, height; glfwGetFramebufferSize(WindowManager::mInstance->mWindow, &width, &height);
 
 	return WindowManager::mInstance->mWindowFramebufferSize;
@@ -65,6 +67,7 @@ void WindowManager::SetSize(const unsigned int width, const unsigned int height)
 
 vec2 WindowManager::GetPosition()
 {
+	// TODO
 	// int xPos, yPos; glfwGetWindowPos(WindowManager::mInstance->mWindow, &xPos, &yPos);
 
 	return WindowManager::mInstance->mWindowPosition;
@@ -77,6 +80,7 @@ void WindowManager::SetPosition(const int left, const int top)
 
 bool WindowManager::GetCloseState()
 {
+	// TODO
 	//return glfwWindowShouldClose(WindowManager::mInstance->mWindow);
 
 	return WindowManager::mInstance->mWindowCloseRequested;
@@ -86,22 +90,40 @@ void WindowManager::SetCloseState(const bool close)
 {
 	WindowManager::mInstance->mWindowCloseRequested = close;
 
-	/*if(close) glfwSetWindowShouldClose(WindowManager::mInstance->mWindow, GL_TRUE);
-	else glfwSetWindowShouldClose(WindowManager::mInstance->mWindow, GL_FALSE);*/
+	// TODO
+	// if(close) glfwSetWindowShouldClose(WindowManager::mInstance->mWindow, GL_TRUE);
+	// else glfwSetWindowShouldClose(WindowManager::mInstance->mWindow, GL_FALSE);
 }
 
-auto WindowManager::GetClipboardString() -> const string&
+auto WindowManager::GetClipboardString() -> const std::string&
 {
-	string* clipboardStr = new string();
+	std::string* clipboardStr = new std::string();
 
 	clipboardStr->assign(glfwGetClipboardString(WindowManager::mInstance->mWindow));
 
 	return std::move(*clipboardStr);
 }
 
-void WindowManager::SetClipboardString(const string& text)
+void WindowManager::SetClipboardString(const std::string& text)
 {
 	glfwSetClipboardString(WindowManager::mInstance->mWindow, text.c_str());
+}
+
+auto WindowManager::GetRenderer() -> std::shared_ptr<Renderer>
+{
+	if(mInstance->mRenderer.get() != nullptr)
+	{
+		return mInstance->mRenderer;
+	}
+
+	DebugLog::Write("Warning: WindowManager.GetRenderer: No renderer set (in %s)", mInstance->GetId().GetStringRef().c_str());
+
+	return nullptr;
+}
+
+void WindowManager::SetRenderer(std::shared_ptr<Renderer> renderer)
+{
+	mInstance->mRenderer = renderer;
 }
 
 void WindowManager::Load()
@@ -129,9 +151,10 @@ void WindowManager::Load()
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_FALSE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	// TODO
 	//glfwWindowHint(GLFW_SRGB_CAPABLE, GL_TRUE);
 
-	// TODO: WindowManager: Resolución, Título, etc configurables
+	// TODO: WindowManager: Resolution, Title, etc -> Make an interface (so I can edit them outside this class)
 	mWindow = glfwCreateWindow(1280, 720, "JuEngine Test", NULL, NULL);
 	mWindowSize = vec2(1280, 720);
 	mWindowFramebufferSize = vec2(1280, 720);
@@ -183,6 +206,7 @@ void WindowManager::Load()
 
 	// --------------------------------
 
+	// TODO
 	//glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	glfwSetWindowSizeCallback(mWindow, WindowManager::CallbackWindowSize);
 	glfwSetFramebufferSizeCallback(mWindow, WindowManager::CallbackFramebufferSize);
@@ -228,23 +252,6 @@ void WindowManager::PollEvents()
 	glfwPollEvents();
 }
 
-auto WindowManager::GetRenderer() -> Renderer*
-{
-	if(mRenderer)
-	{
-		return mRenderer.get();
-	}
-
-	DebugLog::Write("Warning: WindowManager.GetRenderer: No renderer set (in %s)", this->GetName().c_str());
-
-	return nullptr;
-}
-
-void WindowManager::SetRenderer(Renderer* renderer)
-{
-	mRenderer = shared_ptr<Renderer>(renderer);
-}
-
 void WindowManager::SetActiveInThisThread(const bool active)
 {
 	if(mWindow)
@@ -288,6 +295,7 @@ void WindowManager::CallbackWindowFocus(GLFWwindow* window, int focused)
 
 void WindowManager::CallbackDrop(GLFWwindow* window, int count, const char** paths)
 {
+	// TODO
 	// for(int i = 0;  i < count;  ++i) handle_dropped_file(paths[i]);
 }
 
