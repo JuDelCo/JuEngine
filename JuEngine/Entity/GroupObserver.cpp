@@ -4,8 +4,7 @@
 
 #include "GroupObserver.hpp"
 #include "Group.hpp"
-#include "../Resources/DebugLog.hpp"
-#include <functional>
+#include "../App.hpp"
 
 namespace JuEngine
 {

@@ -4,12 +4,13 @@
 
 #pragma once
 
-#include "GroupObserver.hpp"
 #include "../DllExport.hpp"
 #include "ISystem.hpp"
 
 namespace JuEngine
 {
+class GroupObserver;
+
 class JUENGINEAPI ReactiveSystem : public IExecuteSystem
 {
 	public:

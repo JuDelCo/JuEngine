@@ -14,10 +14,9 @@ class Shader;
 class JUENGINEAPI Material : public IObject
 {
 	public:
-		Material() : IObject("material") {}
+		Material(const std::string& shaderName, const std::string& textureName);
 
 		void Use();
-		static void DisableMaterials();
 
 		auto GetDiffuseColor() -> const vec3&;
 		void SetDiffuseColor(const vec3 diffuseColor);

@@ -30,7 +30,6 @@ class JUENGINEAPI SystemContainer : public IInitializeSystem, public IExecuteSys
 		std::vector<std::shared_ptr<IInitializeSystem>> mInitializeSystems;
 		std::vector<std::shared_ptr<IExecuteSystem>> mExecuteSystems;
 		std::vector<std::shared_ptr<IFixedExecuteSystem>> mFixedExecuteSystems;
-		std::vector<std::shared_ptr<ITimedExecuteSystem>> mTimedExecuteSystems;
 };
 
 template <typename T>

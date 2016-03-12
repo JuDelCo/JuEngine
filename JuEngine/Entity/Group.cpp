@@ -3,9 +3,8 @@
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
 #include "Group.hpp"
-#include "Matcher.hpp"
 #include "GroupObserver.hpp"
-#include "../Resources/DebugLog.hpp"
+#include "../App.hpp"
 #include <algorithm>
 
 namespace JuEngine

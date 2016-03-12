@@ -4,16 +4,16 @@
 
 #include "ForwardRenderer.hpp"
 #include "Shader.hpp"
-
 #include "../Components/Camera.hpp"
 #include "../Components/Light.hpp"
 #include "../Components/MeshRenderer.hpp"
 #include "../Components/Transform.hpp"
 #include "../Components/World.hpp"
 #include "../Entity/Pool.hpp"
-
-#include "../Managers/WindowManager.hpp"
-#include "../Resources/Math.hpp"
+#include "../Entity/Group.hpp"
+#include "../OpenGL.hpp"
+#include "../App.hpp"
+#include "../Services/IWindowService.hpp"
 
 namespace JuEngine
 {
@@ -135,9 +135,9 @@ void ForwardRenderer::Render()
 	{
 		// Actualizamos el viewport dependiendo de la cámara y el tamaño de la pantalla
 		auto camera = cameraEntity->Get<Camera>();
-		camera->SetScreenSize(WindowManager::GetSize());
+		camera->SetScreenSize(App::Window()->GetSize());
 		vec4 viewport = camera->GetViewport();
-		glViewport(viewport.x, viewport.y, (WindowManager::GetSize().x * viewport.z), (WindowManager::GetSize().y * viewport.w));
+		glViewport(viewport.x, viewport.y, (App::Window()->GetSize().x * viewport.z), (App::Window()->GetSize().y * viewport.w));
 
 		// Actualizamos el Uniform Block "GlobalMatrix"
 		glBindBuffer(GL_UNIFORM_BUFFER, mGlobalMatrixUBO);
@@ -171,7 +171,7 @@ void ForwardRenderer::Render()
 
 				if(material->GetShader() != nullptr)
 				{
-					auto modelMatrix = entity->GetTransform()->GetMatrix();
+					auto modelMatrix = entity->Get<Transform>()->GetMatrix();
 					material->GetShader()->SetUniform("modelToWorldMatrix", modelMatrix);
 
 					// =======================================================================
@@ -186,7 +186,7 @@ void ForwardRenderer::Render()
 						light = lightEntity->Get<Light>();
 
 						lightsStruct[lightCounter].lightPosType = vec4(
-							cameraEntity->GetTransform()->InverseTransformPoint(lightEntity->GetTransform()->GetPosition()),
+							cameraEntity->Get<Transform>()->InverseTransformPoint(lightEntity->Get<Transform>()->GetPosition()),
 							light->GetType() == LightType::LIGHT_POINT ? 1.f : 0.f
 						);
 						lightsStruct[lightCounter].lightIntensity = vec4((light->GetColor() * light->GetIntensity()), 1.f);

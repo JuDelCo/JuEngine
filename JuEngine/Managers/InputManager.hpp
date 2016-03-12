@@ -4,44 +4,38 @@
 
 #pragma once
 
-#include "../Resources/IObject.hpp"
-#include "../Resources/Math.hpp"
+#include "../Services/IInputService.hpp"
 #include "InputDefines.hpp"
 #include <unordered_map>
 
-class GLFWwindow;
-
 namespace JuEngine
 {
-class JUENGINEAPI InputManager : public IObject
+class JUENGINEAPI InputManager : public IInputService
 {
-	friend class WindowManager;
-
 	public:
 		InputManager();
 		~InputManager();
 
 		void Update();
-		static void ResetBindings();
-		static void BindKey(const Identifier& action, const KeyboardKey key);
-		static void BindMouse(const Identifier& action, const MouseButton button);
+		void ResetBindings();
+		void BindKey(const Identifier& action, const KeyboardKey key);
+		void BindMouse(const Identifier& action, const MouseButton button);
 
-		static bool IsPressed(const Identifier& action);
-		static bool IsHeld(const Identifier& action);
-		static bool IsReleased(const Identifier& action);
+		bool IsPressed(const Identifier& action);
+		bool IsHeld(const Identifier& action);
+		bool IsReleased(const Identifier& action);
 
-		static auto MouseGetPosition() -> const vec2&;
-		static void MouseSetPosition(const vec2 position);
-		static auto MouseGetWheelDelta() -> const int&;
-		static bool IsMouseOverWindow();
-		static bool IsWindowActive();
+		auto MouseGetPosition() -> const vec2&;
+		void MouseSetPosition(const vec2 position);
+		auto MouseGetWheelDelta() -> const int&;
+		bool IsMouseOverWindow();
 
 	protected:
-		static void CallbackKeyEvent(GLFWwindow* window, int key, int scanCode, int action, int mods);
-		static void CallbackTextEvent(GLFWwindow* window, unsigned int codePoint);
-		static void CallbackMouseMoveEvent(GLFWwindow* window, double xPos, double yPos);
-		static void CallbackMouseButtonEvent(GLFWwindow* window, int button, int action, int mods);
-		static void CallbackMouseScrollEvent(GLFWwindow* window, double xOffset, double yOffset);
+		void CallbackKeyEvent(GLFWwindow* window, int key, int scanCode, int action, int mods);
+		void CallbackTextEvent(GLFWwindow* window, unsigned int codePoint);
+		void CallbackMouseMoveEvent(GLFWwindow* window, double xPos, double yPos);
+		void CallbackMouseButtonEvent(GLFWwindow* window, int button, int action, int mods);
+		void CallbackMouseScrollEvent(GLFWwindow* window, double xOffset, double yOffset);
 
 	private:
 		std::unordered_map<Identifier, KeyInfo> mKeyBindings;
@@ -49,8 +43,5 @@ class JUENGINEAPI InputManager : public IObject
 		vec2 mMousePosition{0, 0};
 		int mMouseWheelDeltaPrev{0};
 		int mMouseWheelDelta{0};
-
-		// Singleton
-		static InputManager* mInstance;
 };
 }

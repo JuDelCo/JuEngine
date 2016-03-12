@@ -6,19 +6,23 @@
 
 #include "../Resources/IObject.hpp"
 #include "../Resources/Math.hpp"
-#include "../OpenGL.hpp"
 #include <vector>
 #include <unordered_map>
+
+typedef unsigned int GLenum;
+typedef int GLint;
+typedef unsigned int GLuint;
 
 namespace JuEngine
 {
 class JUENGINEAPI Shader : public IObject
 {
 	public:
-		Shader();
+		Shader(const std::string& vertexPath, const std::string& fragmentPath);
 		~Shader();
 
 		void Use();
+		static void ReloadAll();
 		static void DisableShaders();
 		void SetUniform(const std::string& name, const float x);
 		void SetUniform(const std::string& name, const float x, const float y);

@@ -30,7 +30,7 @@ class JUENGINEAPI Identifier
 		bool operator !=(const char* right) const;
 
 	protected:
-		Identifier() {}
+		Identifier();
 
 	private:
 		bool mIsInteger{true};

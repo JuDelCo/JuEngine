@@ -5,15 +5,18 @@
 #pragma once
 
 #include "../Resources/IObject.hpp"
-#include "../OpenGL.hpp"
 #include <vector>
+
+typedef unsigned int GLenum;
+typedef unsigned int GLuint;
+#define GL_TRIANGLES 0x0004
 
 namespace JuEngine
 {
 class JUENGINEAPI Mesh : public IObject
 {
 	public:
-		Mesh();
+		Mesh(const std::string& fileName, const GLenum drawMode = GL_TRIANGLES);
 		Mesh(const std::vector<float>& vertexArray, const std::vector<unsigned int>& indexArray, const GLenum drawMode);
 		~Mesh();
 

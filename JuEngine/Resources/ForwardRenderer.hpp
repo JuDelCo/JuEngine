@@ -5,7 +5,8 @@
 #pragma once
 
 #include "Renderer.hpp"
-#include "../OpenGL.hpp"
+
+typedef unsigned int GLuint;
 
 namespace JuEngine
 {

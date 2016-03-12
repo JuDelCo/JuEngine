@@ -4,9 +4,10 @@
 
 #include "Pool.hpp"
 #include "Entity.hpp"
+#include "Group.hpp"
 #include "ISystem.hpp"
 #include "ReactiveSystem.hpp"
-#include "../Resources/DebugLog.hpp"
+#include "../App.hpp"
 #include <algorithm>
 
 namespace JuEngine
@@ -25,7 +26,7 @@ Pool::~Pool()
 
 	if(! mRetainedEntities.empty())
 	{
-		DebugLog::Write("Warning, some entities remain undestroyed in the pool destruction !");
+		App::Log()->Warning("Warning, some entities remain undestroyed in the pool destruction !");
 	}
 
 	while(! mReusableEntities.empty())
@@ -285,7 +286,7 @@ void Pool::UpdateGroupsComponentAddedOrRemoved(EntityPtr entity, ComponentId ind
 
 	if (groups.size() > 0)
 	{
-		auto events = std::vector<Group::GroupChanged*>(groups.size());
+		auto events = std::vector<Group::GroupChanged*>();
 
 		for (int i = 0, groupsCount = groups.size(); i < groupsCount; ++i)
 		{

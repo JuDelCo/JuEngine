@@ -3,36 +3,28 @@
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
 #include "LevelManager.hpp"
-#include "TimerManager.hpp"
-#include "PoolManager.hpp"
-#include "SystemManager.hpp"
-#include "WindowManager.hpp"
+#include "../Entity/Pool.hpp"
 #include "../Resources/Level.hpp"
 #include "../Resources/Renderer.hpp"
-#include "../Resources/DebugLog.hpp"
+#include "../Resources/Timer.hpp"
+#include "../App.hpp"
+#include "../Services/IDataService.hpp"
+#include "../Services/ISystemService.hpp"
+#include "../Services/IWindowService.hpp"
 
 namespace JuEngine
 {
-LevelManager* LevelManager::mInstance = nullptr;
-
-LevelManager::LevelManager() : IObject("levelManager")
+LevelManager::LevelManager()
 {
-	if(LevelManager::mInstance != nullptr)
-	{
-		ThrowRuntimeError("Error, there are a LevelManager instance created already");
-	}
-
-	LevelManager::mInstance = this;
+	SetId("levelManager");
 }
 
 LevelManager::~LevelManager()
 {
-	if(LevelManager::mInstance->mRequestedLoadLevelName != nullptr)
+	if(mRequestedLoadLevelName != nullptr)
 	{
-		delete LevelManager::mInstance->mRequestedLoadLevelName;
+		delete mRequestedLoadLevelName;
 	}
-
-	LevelManager::mInstance = nullptr;
 }
 
 void LevelManager::Update()
@@ -69,34 +61,29 @@ void LevelManager::Update()
 		level->Load();
 	}
 
-	SystemManager::Initialize();
+	App::System()->Initialize();
 
 	mRequestedLoadLevel = false;
 	mLoadAdditive = false;
 }
 
-void LevelManager::Unload()
-{
-	mLevels.clear();
-}
-
 void LevelManager::LoadLevel(const Identifier& id)
 {
-	LevelManager::mInstance->mRequestedLoadLevelType = typeid(void);
-	LevelManager::mInstance->mRequestedLoadLevel = false;
+	mRequestedLoadLevelType = typeid(void);
+	mRequestedLoadLevel = false;
 
-	for(const auto &iLevel : LevelManager::mInstance->mLevels)
+	for(const auto &iLevel : mLevels)
 	{
 		if(iLevel.second->GetId() == id)
 		{
-			if(LevelManager::mInstance->mRequestedLoadLevelName != nullptr)
+			if(mRequestedLoadLevelName != nullptr)
 			{
-				delete LevelManager::mInstance->mRequestedLoadLevelName;
+				delete mRequestedLoadLevelName;
 			}
 
-			LevelManager::mInstance->mRequestedLoadLevelName = new Identifier(id);
-			LevelManager::mInstance->mLoadAdditive = false;
-			LevelManager::mInstance->mRequestedLoadLevel = true;
+			mRequestedLoadLevelName = new Identifier(id);
+			mLoadAdditive = false;
+			mRequestedLoadLevel = true;
 
 			return;
 		}
@@ -105,21 +92,21 @@ void LevelManager::LoadLevel(const Identifier& id)
 
 void LevelManager::LoadLevelAdditive(const Identifier& id)
 {
-	LevelManager::mInstance->mRequestedLoadLevelType = typeid(void);
-	LevelManager::mInstance->mRequestedLoadLevel = false;
+	mRequestedLoadLevelType = typeid(void);
+	mRequestedLoadLevel = false;
 
-	for(const auto &iLevel : LevelManager::mInstance->mLevels)
+	for(const auto &iLevel : mLevels)
 	{
 		if(iLevel.second->GetId() == id)
 		{
-			if(LevelManager::mInstance->mRequestedLoadLevelName != nullptr)
+			if(mRequestedLoadLevelName != nullptr)
 			{
-				delete LevelManager::mInstance->mRequestedLoadLevelName;
+				delete mRequestedLoadLevelName;
 			}
 
-			LevelManager::mInstance->mRequestedLoadLevelName = new Identifier(id);
-			LevelManager::mInstance->mLoadAdditive = true;
-			LevelManager::mInstance->mRequestedLoadLevel = true;
+			mRequestedLoadLevelName = new Identifier(id);
+			mLoadAdditive = true;
+			mRequestedLoadLevel = true;
 
 			return;
 		}
@@ -128,22 +115,27 @@ void LevelManager::LoadLevelAdditive(const Identifier& id)
 
 void LevelManager::UnloadLevel()
 {
-	SystemManager::Reset();
-	PoolManager::Unload();
-	WindowManager::GetRenderer()->Reset();
-	TimerManager::Unload();
+	App::System()->Reset();
+	App::Data()->DeleteAll<Pool>();
+	App::Window()->GetRenderer()->Reset();
+	App::Data()->DeleteAll<Timer>();
+}
+
+void LevelManager::DeleteAll()
+{
+	mLevels.clear();
 }
 
 void LevelManager::Add(std::shared_ptr<Level> level, std::type_index type)
 {
-	if(LevelManager::mInstance->mLevels.count(type) != 0)
+	if(mLevels.count(type) != 0)
 	{
-		DebugLog::Write("Warning: LevelManager.Add: Level of type %s exists already", type.name());
+		App::Log()->Warning("Warning: LevelManager.Add: Level of type %s exists already", type.name());
 
 		return;
 	}
 
-	LevelManager::mInstance->mLevels[type] = level;
+	mLevels[type] = level;
 }
 
 void LevelManager::LoadLevel(Level* level)
@@ -164,12 +156,12 @@ void LevelManager::LoadLevelAdditive(Level* level)
 
 auto LevelManager::Get(std::type_index type) -> Level*
 {
-	if(LevelManager::mInstance->mLevels.count(type) != 0)
+	if(mLevels.count(type) != 0)
 	{
-		return &*LevelManager::mInstance->mLevels.at(type);
+		return &*mLevels.at(type);
 	}
 
-	DebugLog::Write("Warning: LevelManager.Get: No level found of type %s", type.name());
+	App::Log()->Warning("Warning: LevelManager.Get: No level found of type %s", type.name());
 
 	return nullptr;
 }

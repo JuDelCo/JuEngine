@@ -3,12 +3,11 @@
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
 #include "Entity.hpp"
-#include "../Components/Transform.hpp"
-#include "../Resources/DebugLog.hpp"
+#include "../App.hpp"
 
 namespace JuEngine
 {
-Entity::Entity(std::map<ComponentId, std::stack<IComponent*>>* componentPools)
+Entity::Entity(std::map<ComponentId, std::stack<IComponent*>>* componentPools) : IObject("e")
 {
 	mComponentPools = componentPools;
 }
@@ -81,16 +80,6 @@ auto Entity::GetComponent(const ComponentId index) const -> IComponent*
 bool Entity::HasComponent(const ComponentId index) const
 {
 	return (mComponents.find(index) != mComponents.end());
-}
-
-auto Entity::GetTransform() const -> Transform*
-{
-	return Get<Transform>();
-}
-
-auto Entity::UseTransform() -> Transform*
-{
-	return Use<Transform>();
 }
 
 bool Entity::HasComponents(const std::vector<ComponentId>& indices) const

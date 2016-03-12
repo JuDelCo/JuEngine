@@ -4,7 +4,6 @@
 
 #include "SystemContainer.hpp"
 #include "ReactiveSystem.hpp"
-#include <memory>
 
 namespace JuEngine
 {
@@ -35,11 +34,6 @@ auto SystemContainer::Add(std::shared_ptr<ISystem> system) -> SystemContainer*
 		mFixedExecuteSystems.push_back(std::dynamic_pointer_cast<IFixedExecuteSystem>(system));
 	}
 
-	if(std::dynamic_pointer_cast<ITimedExecuteSystem>(system) != nullptr)
-	{
-		mTimedExecuteSystems.push_back(std::dynamic_pointer_cast<ITimedExecuteSystem>(system));
-	}
-
 	return this;
 }
 
@@ -64,15 +58,6 @@ void SystemContainer::FixedExecute()
 	for(const auto &system : mFixedExecuteSystems)
 	{
 		system->FixedExecute();
-	}
-
-	for(const auto &system : mTimedExecuteSystems)
-	{
-		if(system->mClock.GetTimeElapsed() >= system->mTimeDelay)
-		{
-			system->mClock.Reset();
-			system->TimedExecute();
-		}
 	}
 }
 

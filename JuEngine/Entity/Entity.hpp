@@ -6,16 +6,16 @@
 
 #include "ComponentTypeId.hpp"
 #include "../Resources/Delegate.hpp"
+#include "../Resources/IObject.hpp"
 #include <stack>
 #include <map>
 
 namespace JuEngine
 {
 class Entity;
-class Transform;
 typedef std::shared_ptr<Entity> EntityPtr;
 
-class JUENGINEAPI Entity
+class JUENGINEAPI Entity : public IObject
 {
 	friend class Pool;
 
@@ -30,8 +30,6 @@ class JUENGINEAPI Entity
 		template <typename T> inline auto Use() -> T*;
 		template <typename T> inline bool Has() const;
 
-		auto GetTransform() const -> Transform*;
-		auto UseTransform() -> Transform*;
 		bool HasComponents(const std::vector<ComponentId>& indices) const;
 		bool HasAnyComponent(const std::vector<ComponentId>& indices) const;
 		auto GetComponentsCount() const -> unsigned int;
@@ -90,7 +88,7 @@ auto Entity::CreateComponent(TArgs&&... args) -> IComponent*
 		component = new T();
 	}
 
-	((T*)component)->Reset(std::forward<TArgs>(args)...);
+	(static_cast<T*>(component))->Reset(std::forward<TArgs>(args)...);
 
 	return component;
 }
@@ -122,14 +120,14 @@ auto Entity::Refresh() -> EntityPtr
 template<typename T>
 auto Entity::Get() const -> T*
 {
-	return (T*)GetComponent(ComponentTypeId::Get<T>());
+	return static_cast<T*>(GetComponent(ComponentTypeId::Get<T>()));
 }
 
 template<typename T>
 auto Entity::Use() -> T*
 {
 	Refresh<T>();
-	return (T*)GetComponent(ComponentTypeId::Get<T>());
+	return static_cast<T*>(GetComponent(ComponentTypeId::Get<T>()));
 }
 
 template <typename T>

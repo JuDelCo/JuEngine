@@ -14,19 +14,12 @@ class Pool;
 class JUENGINEAPI Renderer : public IObject
 {
 	public:
-		Renderer() : IObject("renderer") {}
+		Renderer();
 
 		virtual void Render() = 0;
 
-		void Register(Pool* pool)
-		{
-			mPools.push_back(pool);
-		}
-
-		void Reset()
-		{
-			mPools.clear();
-		}
+		void Register(Pool* pool);
+		void Reset();
 
 	protected:
 		std::vector<Pool*> mPools;

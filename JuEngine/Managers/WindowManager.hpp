@@ -4,37 +4,35 @@
 
 #pragma once
 
-#include "../Resources/IObject.hpp"
-#include "../Resources/Math.hpp"
-#include <memory>
-
-class GLFWwindow;
+#include "../Services/IWindowService.hpp"
 
 namespace JuEngine
 {
-class Renderer;
-
-class JUENGINEAPI WindowManager : public IObject
+class JUENGINEAPI WindowManager : public IWindowService
 {
-	friend class Application;
-	friend class InputManager;
-
 	public:
 		WindowManager();
 		~WindowManager();
 
-		static bool HasFocus();
-		static void SetTitle(const std::string& title);
-		static vec2 GetSize();
-		static void SetSize(const unsigned int width, const unsigned int height);
-		static vec2 GetPosition();
-		static void SetPosition(const int left, const int top);
-		static bool GetCloseState();
-		static void SetCloseState(const bool close);
-		static auto GetClipboardString() -> const std::string&;
-		static void SetClipboardString(const std::string& text);
-		static auto GetRenderer() -> std::shared_ptr<Renderer>;
-		static void SetRenderer(std::shared_ptr<Renderer> renderer);
+		bool HasFocus();
+		void SetTitle(const std::string& title);
+		vec2 GetSize();
+		void SetSize(const unsigned int width, const unsigned int height);
+		vec2 GetPosition();
+		void SetPosition(const int left, const int top);
+		bool GetCloseState();
+		void SetCloseState(const bool close);
+		auto GetClipboardString() -> const std::string&;
+		void SetClipboardString(const std::string& text);
+		auto GetRenderer() -> std::shared_ptr<Renderer>;
+		void SetRenderer(std::shared_ptr<Renderer> renderer);
+
+		void CallbackWindowSize(GLFWwindow* window, int width, int height);
+		void CallbackFramebufferSize(GLFWwindow* window, int width, int height);
+		void CallbackWindowPosition(GLFWwindow* window, int xPos, int yPos);
+		void CallbackWindowFocus(GLFWwindow* window, int focused);
+		void CallbackDrop(GLFWwindow* window, int count, const char** paths);
+		void CallbackClose(GLFWwindow* window);
 
 	protected:
 		void Load();
@@ -42,16 +40,9 @@ class JUENGINEAPI WindowManager : public IObject
 		void SwapBuffers();
 		void PollEvents();
 		void SetActiveInThisThread(const bool active = true);
-		static auto GetWindow() -> GLFWwindow*;
+		auto GetWindow() -> GLFWwindow*;
 
 	private:
-		static void CallbackWindowSize(GLFWwindow* window, int width, int height);
-		static void CallbackFramebufferSize(GLFWwindow* window, int width, int height);
-		static void CallbackWindowPosition(GLFWwindow* window, int xPos, int yPos);
-		static void CallbackWindowFocus(GLFWwindow* window, int focused);
-		static void CallbackDrop(GLFWwindow* window, int count, const char** paths);
-		static void CallbackClose(GLFWwindow* window);
-
 		GLFWwindow* mWindow{nullptr};
 		bool mWindowCloseRequested{false};
 		bool mWindowHasFocus{true};
@@ -59,8 +50,5 @@ class JUENGINEAPI WindowManager : public IObject
 		vec2 mWindowSize{0,0};
 		vec2 mWindowFramebufferSize{0,0};
 		std::shared_ptr<Renderer> mRenderer;
-
-		// Singleton
-		static WindowManager* mInstance;
 };
 }

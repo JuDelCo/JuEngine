@@ -101,4 +101,8 @@ bool Identifier::operator !=(const char* right) const
 {
 	return !(*this == right);
 }
+
+Identifier::Identifier()
+{
+}
 }

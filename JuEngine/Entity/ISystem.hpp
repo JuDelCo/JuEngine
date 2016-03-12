@@ -7,9 +7,6 @@
 #include "Entity.hpp"
 #include "Matcher.hpp"
 #include "TriggerOnEvent.hpp"
-#include "../Resources/Clock.hpp"
-#include "../DllExport.hpp"
-#include <vector>
 
 namespace JuEngine
 {
@@ -66,27 +63,6 @@ class JUENGINEAPI IFixedExecuteSystem : public ISystem
 		virtual ~IFixedExecuteSystem() = default;
 
 		virtual void FixedExecute() = 0;
-};
-
-class JUENGINEAPI ITimedExecuteSystem : public IInitializeSystem
-{
-	friend class SystemContainer;
-
-	public:
-		ITimedExecuteSystem(const float timeDelay) : ITimedExecuteSystem(Time::Seconds(timeDelay)) {}
-		ITimedExecuteSystem(const Time timeDelay) : mTimeDelay(timeDelay) {}
-		virtual ~ITimedExecuteSystem() = default;
-
-		void Initialize()
-		{
-			mClock.Reset();
-		}
-
-		virtual void TimedExecute() = 0;
-
-	protected:
-		Time mTimeDelay;
-		Clock mClock;
 };
 
 class JUENGINEAPI IReactiveExecuteSystem : public ISystem

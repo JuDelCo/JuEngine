@@ -5,11 +5,14 @@
 #pragma once
 
 #include "../Entity/IComponent.hpp"
-#include "../Entity/Entity.hpp"
 #include "../Resources/Math.hpp"
+#include <memory>
 
 namespace JuEngine
 {
+class Entity;
+typedef std::shared_ptr<Entity> EntityPtr;
+
 class JUENGINEAPI Transform : public IComponent
 {
 	public:

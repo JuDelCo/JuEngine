@@ -4,29 +4,28 @@
 
 #pragma once
 
-#include "../Resources/IObject.hpp"
+#include "../Services/ITimeService.hpp"
 #include "../Resources/Timer.hpp"
 
 namespace JuEngine
 {
-class JUENGINEAPI AppTimeManager : public IObject
+class JUENGINEAPI TimeManager : public ITimeService
 {
-	friend class Application;
-
 	public:
-		AppTimeManager();
-		~AppTimeManager();
+		TimeManager();
 
 		void Update();
 		void FixedUpdate();
-		static Time GetAppRunTime();
-		static auto GetDeltaTime() -> const Time&;
+		Time GetAppRunTime();
+		auto GetDeltaTime() -> const Time&;
 		void SetMaxDeltaTime(const Time maxDeltaTime);
-		static auto GetFrameCount() -> const unsigned long&;
-		static auto GetFPS() -> const unsigned int&;
+		auto GetFrameCount() -> const unsigned long&;
+		auto GetFPS() -> const unsigned int&;
+		auto GetCurrentDate() -> std::string;
+		auto GetCurrentTime() -> std::string;
 
 	protected:
-		static void Sleep(Time ms);
+		void Sleep(Time ms);
 
 	private:
 		unsigned int mFps{0};
@@ -37,8 +36,5 @@ class JUENGINEAPI AppTimeManager : public IObject
 		Clock mAppFixedTime;
 		Time mDeltaTime;
 		Time mMaxDeltaTime{Time::Milliseconds(20)};
-
-		// Singleton
-		static AppTimeManager* mInstance;
 };
 }

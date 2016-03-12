@@ -6,13 +6,14 @@
 
 #include "../DllExport.hpp"
 #include "Entity.hpp"
-#include "Group.hpp"
+#include "Matcher.hpp"
 #include <unordered_map>
-#include <map>
+#include <unordered_set>
 
 namespace JuEngine
 {
 class ISystem;
+class Group;
 
 class JUENGINEAPI Pool
 {

@@ -3,10 +3,18 @@
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
 #include "Material.hpp"
-#include "../Managers/ShaderManager.hpp"
+#include "../Resources/Shader.hpp"
+#include "../App.hpp"
+#include "../Services/IDataService.hpp"
 
 namespace JuEngine
 {
+Material::Material(const std::string& shaderName, const std::string& textureName) : IObject("material")
+{
+	SetShader(shaderName);
+	//SetTexture(textureName);
+}
+
 void Material::Use()
 {
 	if(mShader)
@@ -16,11 +24,6 @@ void Material::Use()
 		return;
 	}
 
-	Shader::DisableShaders();
-}
-
-void Material::DisableMaterials()
-{
 	Shader::DisableShaders();
 }
 
@@ -61,6 +64,6 @@ auto Material::GetShader() -> Shader*
 
 void Material::SetShader(const Identifier& id)
 {
-	mShader = ShaderManager::Get(id);
+	mShader = App::Data()->Get<Shader>(id);
 }
 }

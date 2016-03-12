@@ -5,21 +5,15 @@
 #pragma once
 
 #include "../Resources/IObject.hpp"
-#include "../Managers/LevelManager.hpp"
 
 namespace JuEngine
 {
 class JUENGINEAPI Level : public IObject
 {
 	public:
-		Level() : IObject("level") {}
+		Level();
 
-		virtual void Load()
-		{
-			LevelManager::UnloadLevel();
-			LoadAdditive();
-		}
-
+		virtual void Load();
 		virtual void LoadAdditive() = 0;
 };
 }

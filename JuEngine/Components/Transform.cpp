@@ -3,6 +3,7 @@
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
 #include "Transform.hpp"
+#include "../Entity/Entity.hpp"
 
 namespace JuEngine
 {
@@ -29,7 +30,7 @@ void Transform::Reset(const vec3 position, const quat orientation)
 
 void Transform::SetParent(const EntityPtr& parent)
 {
-	SetParent(parent->GetTransform());
+	SetParent(parent->Get<Transform>());
 }
 
 void Transform::SetParent(Transform* parent)

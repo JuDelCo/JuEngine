@@ -3,15 +3,15 @@
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
 #include "MeshRenderer.hpp"
-#include "../Managers/MeshManager.hpp"
-#include "../Managers/MaterialManager.hpp"
+#include "../App.hpp"
+#include "../Services/IDataService.hpp"
 
 namespace JuEngine
 {
 void MeshRenderer::Reset(const std::string& meshName, const std::string& materialName, const bool forceDraw)
 {
-	mMesh = MeshManager::Get(meshName);
-	mMaterial = MaterialManager::Get(materialName);
+	mMesh = App::Data()->Get<Mesh>(meshName);
+	mMaterial = App::Data()->Get<Material>(materialName);
 	mForceDraw = forceDraw;
 }
 

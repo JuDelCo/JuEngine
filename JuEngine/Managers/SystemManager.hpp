@@ -4,41 +4,26 @@
 
 #pragma once
 
-#include "../Resources/IObject.hpp"
-#include "../Entity/SystemContainer.hpp"
-#include <memory>
+#include "../Services/ISystemService.hpp"
 
 namespace JuEngine
 {
-class JUENGINEAPI SystemManager : public IObject
-{
-	friend class Application;
-	friend class LevelManager;
+class SystemContainer;
 
+class JUENGINEAPI SystemManager : public ISystemService
+{
 	public:
 		SystemManager();
-		~SystemManager();
 
-		static void Add(std::shared_ptr<ISystem> system);
-		template <typename T> static inline void Add();
+		void Add(std::shared_ptr<ISystem> system);
 
 	protected:
-		static void Initialize();
-		static void Execute();
-		static void FixedExecute();
-
-		static void Reset();
+		void Initialize();
+		void Execute();
+		void FixedExecute();
+		void Reset();
 
 	private:
 		std::shared_ptr<SystemContainer> mSystemContainer;
-
-		// Singleton
-		static SystemManager* mInstance;
 };
-
-template <typename T>
-void SystemManager::Add()
-{
-	SystemManager::Add(std::shared_ptr<T>(new T()));
-}
 }

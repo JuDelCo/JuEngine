@@ -3,14 +3,22 @@
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
 #include "Shader.hpp"
-#include "DebugLog.hpp"
+#include "../OpenGL.hpp"
+#include "../App.hpp"
+#include "../Services/IDataService.hpp"
 #include <fstream>
 #include <streambuf>
 
 namespace JuEngine
 {
-Shader::Shader() : IObject("shader")
+Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath) : IObject("shader")
 {
+	auto shadersPath = "Assets/Shaders/";
+
+	AddShader(GL_VERTEX_SHADER, shadersPath + vertexPath);
+	AddShader(GL_FRAGMENT_SHADER, shadersPath + fragmentPath);
+
+	Reload(true);
 }
 
 Shader::~Shader()
@@ -21,6 +29,14 @@ Shader::~Shader()
 void Shader::Use()
 {
 	glUseProgram(mShaderProgram);
+}
+
+void Shader::ReloadAll()
+{
+	App::Data()->ForEach<Shader>([](Shader* shader)
+	{
+		shader->Reload();
+	});
 }
 
 void Shader::DisableShaders()
@@ -104,8 +120,15 @@ void Shader::Reload(const bool forceLoad)
 
 		if(! shader)
 		{
-			if(forceLoad) { ThrowRuntimeError(""); }
-			else errors = true;
+			if(forceLoad)
+			{
+				ThrowRuntimeError("Error compiling shader: %s", shaderFile.second.c_str());
+			}
+			else
+			{
+				App::Log()->Warning("Warning, error compiling shader: %s", shaderFile.second.c_str());
+				errors = true;
+			}
 
 			break;
 		}
@@ -127,7 +150,17 @@ void Shader::Reload(const bool forceLoad)
 
 	if(! shaderProgram)
 	{
-		if(forceLoad) { ThrowRuntimeError(""); }
+		App::Log()->Warning("Warning, error compiling shader program from the following files:");
+
+		for(const auto &shaderFile : mShaderFiles)
+		{
+			App::Log()->Warning("	%s", shaderFile.second.c_str());
+		}
+
+		if(forceLoad)
+		{
+			ThrowRuntimeError("Error compiling shader program.");
+		}
 	}
 	else
 	{
@@ -161,7 +194,7 @@ void Shader::PrintAttributeNames()
 
 		char buffer[values[0]];
 		glGetProgramResourceName(mShaderProgram, GL_PROGRAM_INPUT, attrIndex, values[0], NULL, buffer);
-		DebugLog::Write("> %s", buffer);
+		App::Log()->Info("> %s", buffer);
 
 		std::string uTypeText;
 		GLuint uTypeSize;
@@ -196,10 +229,10 @@ void Shader::PrintAttributeNames()
 			default: 					uTypeText = "Unknown"; 				uTypeSize = 0; 						break;
 		}
 
-		DebugLog::Write("     location: %i", values[2]);
-		DebugLog::Write("     type: %s", uTypeText.c_str());
-		DebugLog::Write("     size: %i bytes", uTypeSize);
-		DebugLog::Write("     elements: %i", values[3]);
+		App::Log()->Info("     location: %i", values[2]);
+		App::Log()->Info("     type: %s", uTypeText.c_str());
+		App::Log()->Info("     size: %i bytes", uTypeSize);
+		App::Log()->Info("     elements: %i", values[3]);
 	}
 }
 
@@ -221,7 +254,7 @@ void Shader::PrintUniformNames()
 
 		char buffer[values[0]];
 		glGetProgramResourceName(mShaderProgram, GL_UNIFORM, uniformIndex, values[0], NULL, buffer);
-		DebugLog::Write("> %s", buffer);
+		App::Log()->Info("> %s", buffer);
 
 		std::string uTypeText;
 		GLuint uTypeSize;
@@ -256,12 +289,12 @@ void Shader::PrintUniformNames()
 			default: 					uTypeText = "Unknown"; 				uTypeSize = 0; 						break;
 		}
 
-		DebugLog::Write("     location: %i", values[2]);
-		DebugLog::Write("     type: %s", uTypeText.c_str());
-		DebugLog::Write("     size: %i bytes", uTypeSize);
-		DebugLog::Write("     elements: %i", values[3]);
-		DebugLog::Write("     array stride: %i bytes", values[5]);
-		DebugLog::Write("     matrix stride: %i bytes", values[6]);
+		App::Log()->Info("     location: %i", values[2]);
+		App::Log()->Info("     type: %s", uTypeText.c_str());
+		App::Log()->Info("     size: %i bytes", uTypeSize);
+		App::Log()->Info("     elements: %i", values[3]);
+		App::Log()->Info("     array stride: %i bytes", values[5]);
+		App::Log()->Info("     matrix stride: %i bytes", values[6]);
 	}
 }
 
@@ -287,10 +320,10 @@ void Shader::PrintUniformBlockNames()
 
 		char buffer[values[0]];
 		glGetProgramResourceName(mShaderProgram, GL_UNIFORM_BLOCK, uniformBlockIndex, values[0], NULL, buffer);
-		DebugLog::Write("> %s", buffer);
-		DebugLog::Write("     binding point: %i", values[2]);
-		DebugLog::Write("     total size: %i bytes", values[3]);
-		DebugLog::Write("     members: %i", values[1]);
+		App::Log()->Info("> %s", buffer);
+		App::Log()->Info("     binding point: %i", values[2]);
+		App::Log()->Info("     total size: %i bytes", values[3]);
+		App::Log()->Info("     members: %i", values[1]);
 
 		for(int uniformIndex = 0; uniformIndex < numActiveUniforms; ++uniformIndex)
 		{
@@ -300,7 +333,7 @@ void Shader::PrintUniformBlockNames()
 
 			char bufferUnif[valuesUnif[0]];
 			glGetProgramResourceName(mShaderProgram, GL_UNIFORM, uniformIndex, valuesUnif[0], NULL, bufferUnif);
-			DebugLog::Write("     - %s", bufferUnif);
+			App::Log()->Info("     - %s", bufferUnif);
 
 			std::string uTypeText;
 			GLuint uTypeSize;
@@ -335,12 +368,12 @@ void Shader::PrintUniformBlockNames()
 				default: 					uTypeText = "Unknown"; 				uTypeSize = 0; 						break;
 			}
 
-			DebugLog::Write("          offset: %i bytes", valuesUnif[2]);
-			DebugLog::Write("          type: %s", uTypeText.c_str());
-			DebugLog::Write("          size: %i bytes", uTypeSize);
-			DebugLog::Write("          elements: %i", valuesUnif[3]);
-			DebugLog::Write("          array stride: %i bytes", valuesUnif[5]);
-			DebugLog::Write("          matrix stride: %i bytes", valuesUnif[6]);
+			App::Log()->Info("          offset: %i bytes", valuesUnif[2]);
+			App::Log()->Info("          type: %s", uTypeText.c_str());
+			App::Log()->Info("          size: %i bytes", uTypeSize);
+			App::Log()->Info("          elements: %i", valuesUnif[3]);
+			App::Log()->Info("          array stride: %i bytes", valuesUnif[5]);
+			App::Log()->Info("          matrix stride: %i bytes", valuesUnif[6]);
 		}
 	}
 
@@ -365,11 +398,11 @@ void Shader::PrintUniformBlockNames()
 				GLint size;
 				GLenum type;
 				glGetActiveUniform(mShaderProgram, tUniformIndex, uniformNameLength, &length, &size, &type, uniformName);
-				DebugLog::Write("     - %s", uniformName);
+				App::Log()->Info("     - %s", uniformName);
 
 				GLint uniformOffset;
 				glGetActiveUniformsiv(mShaderProgram, 1, &tUniformIndex, GL_UNIFORM_OFFSET, &uniformOffset);
-				DebugLog::Write("          offset: %i", uniformOffset);
+				App::Log()->Info("          offset: %i", uniformOffset);
 
 				GLint uType;
 				string uTypeText;
@@ -406,25 +439,25 @@ void Shader::PrintUniformBlockNames()
 					default: 					uTypeText = "Unknown"; 				uTypeSize = 0; 						break;
 				}
 
-				DebugLog::Write("          type: %s", uTypeText.c_str());
+				App::Log()->Info("          type: %s", uTypeText.c_str());
 
 				GLint uniformNumElements;
 				glGetActiveUniformsiv(mShaderProgram, 1, &tUniformIndex, GL_UNIFORM_SIZE, &uniformNumElements);
 				GLuint sizeInBytes = uniformNumElements * uTypeSize;
-				DebugLog::Write("          size: %i bytes", sizeInBytes);
-				DebugLog::Write("          elements: %i", uniformNumElements);
+				App::Log()->Info("          size: %i bytes", sizeInBytes);
+				App::Log()->Info("          elements: %i", uniformNumElements);
 
 				GLint arrayStride;
 				glGetActiveUniformsiv(mShaderProgram, 1, &tUniformIndex, GL_UNIFORM_ARRAY_STRIDE, &arrayStride);
-				DebugLog::Write("          array stride: %i", arrayStride);
+				App::Log()->Info("          array stride: %i", arrayStride);
 
 				GLint matrixStride;
 				glGetActiveUniformsiv(mShaderProgram, 1, &tUniformIndex, GL_UNIFORM_MATRIX_STRIDE, &matrixStride);
-				DebugLog::Write("          matrix stride: %i", matrixStride);
+				App::Log()->Info("          matrix stride: %i", matrixStride);
 			}
 			else
 			{
-				DebugLog::Write("     - Bad uniform");
+				App::Log()->Info("     - Bad uniform");
 			}
 		}
 	}*/
@@ -447,7 +480,7 @@ auto Shader::ReadFile(const std::string& shaderPath) -> const std::string
 
 	if(shaderBuffer.empty())
 	{
-		DebugLog::Write("Shader file not found or empty: %s", shaderPath.c_str());
+		App::Log()->Error("Shader file not found or empty: %s", shaderPath.c_str());
 	}
 
 	// TODO: Shader: Return string by reference, not by copy
@@ -482,7 +515,7 @@ GLuint Shader::CreateShader(const GLenum shaderType, const std::string& shaderPa
 		GLchar *strInfoLog = new GLchar[infoLogLength + 1];
 		glGetShaderInfoLog(shaderID, infoLogLength, NULL, strInfoLog);
 
-		DebugLog::Write("Shader compile failure: %s\n%s", shaderPath.c_str(), strInfoLog);
+		App::Log()->Error("Shader compile failure: %s\n%s", shaderPath.c_str(), strInfoLog);
 		delete[] strInfoLog;
 
 		glDeleteShader(shaderID);
@@ -514,7 +547,7 @@ GLuint Shader::CreateProgram(const std::vector<GLuint>& shaders)
 		GLchar *strInfoLog = new GLchar[infoLogLength + 1];
 		glGetProgramInfoLog(programID, infoLogLength, NULL, strInfoLog);
 
-		DebugLog::Write("Shader program link failure: %s", strInfoLog);
+		App::Log()->Error("Shader program link failure: %s", strInfoLog);
 		delete[] strInfoLog;
 
 		glDeleteProgram(programID);

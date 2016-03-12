@@ -3,6 +3,7 @@
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
 #include "ReactiveSystem.hpp"
+#include "GroupObserver.hpp"
 #include "Pool.hpp"
 #include "TriggerOnEvent.hpp"
 
