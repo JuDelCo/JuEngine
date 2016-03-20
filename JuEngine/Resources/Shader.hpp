@@ -33,20 +33,25 @@ class JUENGINEAPI Shader : public IObject
 		void SetUniform(const std::string& name, const vec4 vector);
 		void SetUniform(const std::string& name, const mat3 matrix);
 		void SetUniform(const std::string& name, const mat4 matrix);
+		void SetUniformTexture(const std::string& name, const unsigned int index);
 		void BindUniformBlock(const std::string& name, const GLuint mUniformBufferBindingIndex);
+
 		void AddShader(const GLenum shaderType, const std::string& shaderPath);
 		void Reload(const bool forceLoad = false);
+
 		void PrintAttributeNames();
 		void PrintUniformNames();
 		void PrintUniformBlockNames();
 
 	private:
+		auto GetUniformLocation(const std::string& name) -> GLint;
 		static auto ReadFile(const std::string& shaderPath) -> const std::string;
-		static GLuint CreateShader(const GLenum shaderType, const std::string& shaderPath);
-		static GLuint CreateProgram(const std::vector<GLuint>& shaders);
-		static GLint GetUniformLocation(const GLuint shaderProgram, const std::string& name);
-		static GLint GetUniformBlockLocation(const GLuint shaderProgram, const std::string& name);
+		static auto CreateShader(const GLenum shaderType, const std::string& shaderPath) -> GLuint;
+		static auto CreateProgram(const std::vector<GLuint>& shaders) -> GLuint;
+		static auto GetUniformLocation(const GLuint shaderProgram, const std::string& name) -> GLint;
+		static auto GetUniformBlockLocation(const GLuint shaderProgram, const std::string& name) -> GLint;
 
+		std::unordered_map<std::string, GLint> mUniformCache;
 		std::unordered_map<GLenum, std::string> mShaderFiles;
 		GLuint mShaderProgram{0};
 };

@@ -11,9 +11,11 @@
 #include "../Components/World.hpp"
 #include "../Entity/Pool.hpp"
 #include "../Entity/Group.hpp"
-#include "../OpenGL.hpp"
 #include "../App.hpp"
 #include "../Services/IWindowService.hpp"
+
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 
 namespace JuEngine
 {
@@ -24,6 +26,7 @@ ForwardRenderer::ForwardRenderer()
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	glFrontFace(GL_CW);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // GL_POINT GL_LINE
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_TRUE);
@@ -122,13 +125,15 @@ void ForwardRenderer::Render()
 		glBufferSubData(GL_UNIFORM_BUFFER, sizeof(vec4) + sizeof(float) * 2, sizeof(float), &gammaCorrection);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-		// Limpiamos los buffers de color y profundidad
+		// Actualizamos el valor que usará la limpieza de buffer de color
 		auto skyColor = world->GetSkyColor();
 		glClearColor(pow(skyColor.x,gammaCorrection), pow(skyColor.y,gammaCorrection), pow(skyColor.z,gammaCorrection), 1.f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		break;
 	}
+
+	// Limpiamos los buffers de color y profundidad
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Dibujamos la escena por cada cámara activa
 	for(const auto &cameraEntity : cameras)
@@ -145,6 +150,29 @@ void ForwardRenderer::Render()
 		glBufferSubData(GL_UNIFORM_BUFFER, sizeof(mat4), sizeof(mat4), Math::GetDataPtr(camera->GetViewMatrix()));
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
+		// Actualizamos el Uniform Block "Light"
+		unsigned int lightCounter = 0;
+		struct PerLight { vec4 lightPosType; vec4 lightIntensity; } lightsStruct[5];
+		Light* light = nullptr;
+		for(const auto &lightEntity : lights)
+		{
+			light = lightEntity->Get<Light>();
+
+			lightsStruct[lightCounter].lightPosType = vec4(
+				cameraEntity->Get<Transform>()->InverseTransformPoint(lightEntity->Get<Transform>()->GetPosition()),
+				light->GetType() == LightType::LIGHT_POINT ? 1.f : 0.f
+			);
+			lightsStruct[lightCounter].lightIntensity = vec4((light->GetColor() * light->GetIntensity()), 1.f);
+
+			if(++lightCounter == 5)
+			{
+				break;
+			}
+		}
+		glBindBuffer(GL_UNIFORM_BUFFER, mLightUBO);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(vec4) * 2 * 5, &lightsStruct);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
 		// Renderizamos todas las entidades con un meshRenderer
 		for(const auto &entity : entities)
 		{
@@ -152,54 +180,25 @@ void ForwardRenderer::Render()
 			Material* material = meshRenderer->GetMaterial();
 			Mesh* mesh = meshRenderer->GetMesh();
 
-			// TODO: ForwardRenderer: Check "material != nullptr"
-			vec3 diffuseColor = material->GetDiffuseColor();
-			vec3 specularColor = material->GetSpecularColor();
-			float shininessFactor = material->GetShininessFactor();
-
-			// Actualizamos el Uniform Block "Material"
-			glBindBuffer(GL_UNIFORM_BUFFER, mMaterialUBO);
-			glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(vec3), Math::GetDataPtr(diffuseColor));
-			glBufferSubData(GL_UNIFORM_BUFFER, sizeof(vec4), sizeof(vec3), Math::GetDataPtr(specularColor));
-			glBufferSubData(GL_UNIFORM_BUFFER, sizeof(vec4) * 2, sizeof(float), &shininessFactor);
-			glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
 			// TODO: ForwardRenderer: Render using default shader if material is not defined
 			if(material != nullptr)
 			{
+				vec3 diffuseColor = material->GetDiffuseColor();
+				vec3 specularColor = material->GetSpecularColor();
+				float shininessFactor = material->GetShininessFactor();
+
+				// Actualizamos el Uniform Block "Material"
+				glBindBuffer(GL_UNIFORM_BUFFER, mMaterialUBO);
+				glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(vec3), Math::GetDataPtr(diffuseColor));
+				glBufferSubData(GL_UNIFORM_BUFFER, sizeof(vec4), sizeof(vec3), Math::GetDataPtr(specularColor));
+				glBufferSubData(GL_UNIFORM_BUFFER, sizeof(vec4) * 2, sizeof(float), &shininessFactor);
+				glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
 				material->Use();
 
 				if(material->GetShader() != nullptr)
 				{
-					auto modelMatrix = entity->Get<Transform>()->GetMatrix();
-					material->GetShader()->SetUniform("modelToWorldMatrix", modelMatrix);
-
-					// =======================================================================
-					// TEMP: Lights
-					// =======================================================================
-					unsigned int lightCounter = 0;
-					struct PerLight { vec4 lightPosType; vec4 lightIntensity; } lightsStruct[5];
-					Light* light = nullptr;
-
-					for(const auto &lightEntity : lights)
-					{
-						light = lightEntity->Get<Light>();
-
-						lightsStruct[lightCounter].lightPosType = vec4(
-							cameraEntity->Get<Transform>()->InverseTransformPoint(lightEntity->Get<Transform>()->GetPosition()),
-							light->GetType() == LightType::LIGHT_POINT ? 1.f : 0.f
-						);
-						lightsStruct[lightCounter].lightIntensity = vec4((light->GetColor() * light->GetIntensity()), 1.f);
-
-						if(++lightCounter == 5)
-						{
-							break;
-						}
-					}
-					glBindBuffer(GL_UNIFORM_BUFFER, mLightUBO);
-					glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(vec4) * 2 * 5, &lightsStruct);
-					glBindBuffer(GL_UNIFORM_BUFFER, 0);
-					// =======================================================================
+					material->GetShader()->SetUniform("modelToWorldMatrix", entity->Get<Transform>()->GetMatrix());
 				}
 			}
 

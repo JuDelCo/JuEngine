@@ -9,7 +9,7 @@ To compile it, you'll need:
 - [GLEW](http://glew.sourceforge.net/)
 - [GLM](http://glm.g-truc.net/)
 - [ASSIMP](http://www.assimp.org/)
-- [GCC](http://gcc.gnu.org/) >= 4.8.4
+- [GCC](http://gcc.gnu.org/)
 
 License
 =================

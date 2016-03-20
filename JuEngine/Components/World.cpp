@@ -24,9 +24,11 @@ auto World::GetAmbientColor() -> const vec3&
 	return mAmbientColor;
 }
 
-void World::SetAmbientColor(const vec3 ambientColor)
+auto World::SetAmbientColor(const vec3 ambientColor) -> World*
 {
 	mAmbientColor = Math::Clamp(ambientColor);
+
+	return this;
 }
 
 auto World::GetSkyColor() -> const vec3&
@@ -34,9 +36,11 @@ auto World::GetSkyColor() -> const vec3&
 	return mSkyColor;
 }
 
-void World::SetSkyColor(const vec3 skyColor)
+auto World::SetSkyColor(const vec3 skyColor) -> World*
 {
 	mSkyColor = Math::Clamp(skyColor);
+
+	return this;
 }
 
 auto World::GetAmbientIntensity() -> const float&
@@ -44,9 +48,11 @@ auto World::GetAmbientIntensity() -> const float&
 	return mAmbientIntensity;
 }
 
-void World::SetAmbientIntensity(const float ambientIntensity)
+auto World::SetAmbientIntensity(const float ambientIntensity) -> World*
 {
 	mAmbientIntensity = ambientIntensity;
+
+	return this;
 }
 
 auto World::GetLightAttenuation() -> const float&
@@ -54,9 +60,11 @@ auto World::GetLightAttenuation() -> const float&
 	return mLightAttenuation;
 }
 
-void World::SetLightAttenuation(const float lightAttenuation)
+auto World::SetLightAttenuation(const float lightAttenuation) -> World*
 {
 	mLightAttenuation = lightAttenuation;
+
+	return this;
 }
 
 auto World::GetGammaCorrection() -> const float&
@@ -64,8 +72,10 @@ auto World::GetGammaCorrection() -> const float&
 	return mGammaCorrection;
 }
 
-void World::SetGammaCorrection(const float gammaCorrection)
+auto World::SetGammaCorrection(const float gammaCorrection) -> World*
 {
 	mGammaCorrection = gammaCorrection;
+
+	return this;
 }
 }

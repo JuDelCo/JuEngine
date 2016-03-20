@@ -4,12 +4,14 @@
 
 #include "WindowManager.hpp"
 #include "../Resources/Renderer.hpp"
-#include "../OpenGL.hpp"
 #include "../App.hpp"
 #include "../Services/IInputService.hpp"
 #include "../ImGui/imgui.hpp"
 #include "../ImGui/impl/imgui_impl_glfw.h"
 #include <thread>
+
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 
 namespace JuEngine
 {
@@ -115,6 +117,25 @@ auto WindowManager::GetRenderer() -> std::shared_ptr<Renderer>
 void WindowManager::SetRenderer(std::shared_ptr<Renderer> renderer)
 {
 	mRenderer = renderer;
+}
+
+void WindowManager::SetCursorMode(WindowCursorMode mode)
+{
+	auto cursorMode = GLFW_CURSOR_NORMAL;
+
+	switch (mode)
+	{
+		case WindowCursorMode::Hidden:
+			cursorMode = GLFW_CURSOR_HIDDEN;
+			break;
+		case WindowCursorMode::Capture:
+			cursorMode = GLFW_CURSOR_DISABLED;
+			break;
+		default:
+			break;
+	}
+
+	glfwSetInputMode(mWindow, GLFW_CURSOR, cursorMode);
 }
 
 void WindowManager::CallbackWindowSize(GLFWwindow* window, int width, int height)

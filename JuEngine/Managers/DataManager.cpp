@@ -21,7 +21,7 @@ auto DataManager::Add(const std::type_index type, const Identifier& id, void* as
 {
 	if(mAssets[type].count(id) != 0)
 	{
-		App::Log()->Warning("Warning, attempted to load an asset of type '%u' with id '%s'. The asset id for that type is already being used", type, id.GetStringRef().c_str());
+		App::Log()->Warning("Warning, attempted to load an asset of type '%s' with id '%s'. The asset id for that type is already being used", type.name(), id.GetStringRef().c_str());
 
 		return Get(type, id);
 	}
@@ -35,7 +35,7 @@ auto DataManager::Get(const std::type_index type) -> void*
 {
 	if(mAssets[type].size() > 1)
 	{
-		App::Log()->Warning("Warning: DataManager.Get: Two or more assets of type '%u' were found. Returning the first...", type);
+		App::Log()->Warning("Warning: DataManager.Get: Two or more assets of type '%s' were found. Returning the first...", type.name());
 	}
 
 	if(mAssets[type].size() >= 1)
@@ -43,7 +43,7 @@ auto DataManager::Get(const std::type_index type) -> void*
 		return mAssets[type].begin()->second.get();
 	}
 
-	App::Log()->Warning("Warning: DataManager.Get: No asset of type '%u' found", type);
+	App::Log()->Warning("Warning: DataManager.Get: No asset of type '%s' found", type.name());
 
 	return nullptr;
 }
@@ -55,7 +55,7 @@ auto DataManager::Get(const std::type_index type, const Identifier& id) -> void*
 		return mAssets[type].at(id).get();
 	}
 
-	App::Log()->Warning("Warning: DataManager.Get: No asset of type '%u' found with id '%s'", type, id.GetStringRef().c_str());
+	App::Log()->Warning("Warning: DataManager.Get: No asset of type '%s' found with id '%s'", type.name(), id.GetStringRef().c_str());
 
 	return nullptr;
 }
@@ -76,7 +76,7 @@ void DataManager::Delete(const std::type_index type, const Identifier& id)
 {
 	if(mAssets[type].count(id) == 0)
 	{
-		App::Log()->Warning("Warning: DataManager.Delete: No asset of type '%u' found with id '%s'", type, id.GetStringRef().c_str());
+		App::Log()->Warning("Warning: DataManager.Delete: No asset of type '%s' found with id '%s'", type.name(), id.GetStringRef().c_str());
 
 		return;
 	}

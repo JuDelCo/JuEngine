@@ -31,7 +31,7 @@ class JUENGINEAPI Camera : public IComponent
 		void SetZoom(const float zoom);
 		void SetScreenSize(const vec2 size);
 		auto GetPerspectiveMatrix() -> const mat4&;
-		mat4 GetViewMatrix();
+		auto GetViewMatrix() -> const mat4;
 
 	private:
 		Transform* mTransform;

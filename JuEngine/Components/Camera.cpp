@@ -115,8 +115,8 @@ auto Camera::GetPerspectiveMatrix() -> const mat4&
 	if(! mIsOrthographic)
 	{
 		mPerspectiveMatrixCache = mat4(1.f);
-		mPerspectiveMatrixCache[0].x = mFrustumScale / (mScreenSize.x / mScreenSize.y);
-		mPerspectiveMatrixCache[1].y = mFrustumScale;
+		mPerspectiveMatrixCache[0].x = mFrustumScale / (mScreenSize.x / mScreenSize.y); // divide by 'mZoom' ?
+		mPerspectiveMatrixCache[1].y = mFrustumScale; // divide by 'mZoom' ?
 		mPerspectiveMatrixCache[2].z = -(mFarDistance + mNearDistance) / (mNearDistance - mFarDistance);
 		mPerspectiveMatrixCache[2].w = 1.f;
 		mPerspectiveMatrixCache[3].z = -(2.f * mFarDistance * mNearDistance) / (mNearDistance - mFarDistance);
@@ -136,7 +136,7 @@ auto Camera::GetPerspectiveMatrix() -> const mat4&
 	return mPerspectiveMatrixCache;
 }
 
-mat4 Camera::GetViewMatrix()
+auto Camera::GetViewMatrix() -> const mat4
 {
 	mat4 viewMatrix = mTransform->GetInverseMatrix();
 	vec3 eye = mTransform->GetPosition() + mTransform->Forward();

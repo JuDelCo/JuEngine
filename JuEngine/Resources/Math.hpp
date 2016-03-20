@@ -50,7 +50,7 @@ vec3 Mix(const vec3 x, const vec3 y, float alpha);
 vec4 Mix(const vec4 x, const vec4 y, float alpha);
 quat Lerp(const quat start, const quat end, float alpha);
 quat Slerp(const quat start, const quat end, float alpha);
-quat LookAt(const vec3 posA, const vec3 posB, const vec3 worldUp = vec3(0.f, 1.f, 0.f));
+quat LookAt(const vec3 pos, const vec3 target, const vec3 worldUp = vec3(0.f, 1.f, 0.f));
 std::string ToString(const vec2 v);
 std::string ToString(const vec3 v);
 std::string ToString(const vec4 v);

@@ -3,17 +3,19 @@
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
 #include "Shader.hpp"
-#include "../OpenGL.hpp"
 #include "../App.hpp"
 #include "../Services/IDataService.hpp"
 #include <fstream>
 #include <streambuf>
 
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
 namespace JuEngine
 {
 Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath) : IObject("shader")
 {
-	auto shadersPath = "Assets/Shaders/";
+	static auto shadersPath = "Assets/Shaders/";
 
 	AddShader(GL_VERTEX_SHADER, shadersPath + vertexPath);
 	AddShader(GL_FRAGMENT_SHADER, shadersPath + fragmentPath);
@@ -46,56 +48,52 @@ void Shader::DisableShaders()
 
 void Shader::SetUniform(const std::string& name, const float x)
 {
-	auto location = GetUniformLocation(mShaderProgram, name);
-	glUniform1f(location, x);
+	glUniform1f(GetUniformLocation(name), x);
 }
 
 void Shader::SetUniform(const std::string& name, const float x, const float y)
 {
-	auto location = GetUniformLocation(mShaderProgram, name);
-	glUniform2f(location, x, y);
+	glUniform2f(GetUniformLocation(name), x, y);
 }
 
 void Shader::SetUniform(const std::string& name, const float x, const float y, const float z)
 {
-	auto location = GetUniformLocation(mShaderProgram, name);
-	glUniform3f(location, x, y, z);
+	glUniform3f(GetUniformLocation(name), x, y, z);
 }
 
 void Shader::SetUniform(const std::string& name, const float x, const float y, const float z, const float w)
 {
-	auto location = GetUniformLocation(mShaderProgram, name);
-	glUniform4f(location, x, y, z, w);
+	glUniform4f(GetUniformLocation(name), x, y, z, w);
 }
 
 void Shader::SetUniform(const std::string& name, const vec2 vector)
 {
-	auto location = GetUniformLocation(mShaderProgram, name);
-	glUniform2fv(location, 1, Math::GetDataPtr(vector));
+	glUniform2fv(GetUniformLocation(name), 1, Math::GetDataPtr(vector));
 }
 
 void Shader::SetUniform(const std::string& name, const vec3 vector)
 {
-	auto location = GetUniformLocation(mShaderProgram, name);
-	glUniform3fv(location, 1, Math::GetDataPtr(vector));
+	glUniform3fv(GetUniformLocation(name), 1, Math::GetDataPtr(vector));
 }
 
 void Shader::SetUniform(const std::string& name, const vec4 vector)
 {
-	auto location = GetUniformLocation(mShaderProgram, name);
-	glUniform4fv(location, 1, Math::GetDataPtr(vector));
+	glUniform4fv(GetUniformLocation(name), 1, Math::GetDataPtr(vector));
 }
 
 void Shader::SetUniform(const std::string& name, const mat3 matrix)
 {
-	auto location = GetUniformLocation(mShaderProgram, name);
-	glUniformMatrix3fv(location, 1, GL_FALSE, Math::GetDataPtr(matrix));
+	glUniformMatrix3fv(GetUniformLocation(name), 1, GL_FALSE, Math::GetDataPtr(matrix));
 }
 
 void Shader::SetUniform(const std::string& name, const mat4 matrix)
 {
-	auto location = GetUniformLocation(mShaderProgram, name);
-	glUniformMatrix4fv(location, 1, GL_FALSE, Math::GetDataPtr(matrix));
+	glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, Math::GetDataPtr(matrix));
+}
+
+void Shader::SetUniformTexture(const std::string& name, const unsigned int index)
+{
+	glUniform1i(GetUniformLocation(name), index);
 }
 
 void Shader::BindUniformBlock(const std::string& name, const GLuint mUniformBufferBindingIndex)
@@ -171,11 +169,33 @@ void Shader::Reload(const bool forceLoad)
 
 		mShaderProgram = shaderProgram;
 
+		// TODO: Better names (define uses)
+		glUseProgram(mShaderProgram);
+		SetUniformTexture("texture0", 0);
+		SetUniformTexture("texture1", 1);
+		SetUniformTexture("texture2", 2);
+		SetUniformTexture("texture3", 3);
+		SetUniformTexture("texture4", 4);
+		SetUniformTexture("texture5", 5);
+		SetUniformTexture("texture6", 6);
+		SetUniformTexture("texture7", 7);
+		SetUniformTexture("texture8", 8);
+		SetUniformTexture("texture9", 9);
+		SetUniformTexture("texture10", 10);
+		SetUniformTexture("texture11", 11);
+		SetUniformTexture("texture12", 12);
+		SetUniformTexture("texture13", 13);
+		SetUniformTexture("texture14", 14);
+		SetUniformTexture("texture15", 15);
+		glUseProgram(0);
+
 		// TODO: Shader: UBO indexes -> Renderer (ForwardRenderer)
 		BindUniformBlock("GlobalMatrices", 0);
 		BindUniformBlock("World", 1);
 		BindUniformBlock("Material", 2);
 		BindUniformBlock("Light", 3);
+
+		mUniformCache.clear();
 	}
 }
 
@@ -463,6 +483,16 @@ void Shader::PrintUniformBlockNames()
 	}*/
 }
 
+auto Shader::GetUniformLocation(const std::string& name) -> GLint
+{
+	if(mUniformCache.find(name) == mUniformCache.end())
+	{
+		mUniformCache[name] = GetUniformLocation(mShaderProgram, name);
+	}
+
+	return mUniformCache.at(name);
+}
+
 auto Shader::ReadFile(const std::string& shaderPath) -> const std::string
 {
 	std::string shaderBuffer;
@@ -487,7 +517,7 @@ auto Shader::ReadFile(const std::string& shaderPath) -> const std::string
 	return shaderBuffer;
 }
 
-GLuint Shader::CreateShader(const GLenum shaderType, const std::string& shaderPath)
+auto Shader::CreateShader(const GLenum shaderType, const std::string& shaderPath) -> GLuint
 {
 	GLuint shaderID = glCreateShader(shaderType);
 
@@ -525,7 +555,7 @@ GLuint Shader::CreateShader(const GLenum shaderType, const std::string& shaderPa
 	return shaderID;
 }
 
-GLuint Shader::CreateProgram(const std::vector<GLuint>& shaders)
+auto Shader::CreateProgram(const std::vector<GLuint>& shaders) -> GLuint
 {
 	GLuint programID = glCreateProgram();
 
@@ -563,12 +593,12 @@ GLuint Shader::CreateProgram(const std::vector<GLuint>& shaders)
 	return programID;
 }
 
-GLint Shader::GetUniformLocation(const GLuint shaderProgram, const std::string& name)
+auto Shader::GetUniformLocation(const GLuint shaderProgram, const std::string& name) -> GLint
 {
 	return glGetUniformLocation(shaderProgram, name.c_str());
 }
 
-GLint Shader::GetUniformBlockLocation(const GLuint shaderProgram, const std::string& name)
+auto Shader::GetUniformBlockLocation(const GLuint shaderProgram, const std::string& name) -> GLint
 {
 	return glGetUniformBlockIndex(shaderProgram, name.c_str());
 }

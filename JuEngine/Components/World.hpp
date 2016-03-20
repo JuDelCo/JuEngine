@@ -15,15 +15,15 @@ class JUENGINEAPI World : public IComponent
 		void Reset(const vec3 ambientColor, const vec3 skyColor, const float ambientIntensity = 1.f, const float lightAttenuation = 1.f, const float gammaCorrection = 2.2f);
 
 		auto GetAmbientColor() -> const vec3&;
-		void SetAmbientColor(const vec3 ambientColor);
+		auto SetAmbientColor(const vec3 ambientColor) -> World*;
 		auto GetSkyColor() -> const vec3&;
-		void SetSkyColor(const vec3 skyColor);
+		auto SetSkyColor(const vec3 skyColor) -> World*;
 		auto GetAmbientIntensity() -> const float&;
-		void SetAmbientIntensity(const float ambientIntensity);
+		auto SetAmbientIntensity(const float ambientIntensity) -> World*;
 		auto GetLightAttenuation() -> const float&;
-		void SetLightAttenuation(const float lightAttenuation);
+		auto SetLightAttenuation(const float lightAttenuation) -> World*;
 		auto GetGammaCorrection() -> const float&;
-		void SetGammaCorrection(const float gammaCorrection);
+		auto SetGammaCorrection(const float gammaCorrection) -> World*;
 
 	private:
 		vec3 mAmbientColor{0.f, 0.f, 0.f}; // 0.211f, 0.227f, 0.258f -> 54,58,66

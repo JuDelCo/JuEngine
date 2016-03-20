@@ -13,12 +13,12 @@ namespace Math
 {
 inline float __attribute__((always_inline)) DegToRad(const float degrees)
 {
-	return degrees * 0.0174532925f;
+	return degrees * 0.01745329251994329576923690768489;
 }
 
 inline float __attribute__((always_inline)) RadToDeg(const float radians)
 {
-	return radians / 0.0174532925f;
+	return radians * 57.295779513082320876798154814105;
 }
 
 inline float __attribute__((always_inline)) Min(const float x, const float y)
@@ -201,12 +201,12 @@ inline quat __attribute__((always_inline)) Slerp(const quat start, const quat en
 	return quat(res.w, res.x, res.y, res.z);
 }
 
-inline quat __attribute__((always_inline)) LookAt(const vec3 posA, const vec3 posB, const vec3 worldUp)
+inline quat __attribute__((always_inline)) LookAt(const vec3 pos, const vec3 target, const vec3 worldUp)
 {
 	// http://www.macaronikazoo.com/?p=491
 	// http://www.falstad.com/dotproduct/
 
-	vec3 aimZ = Normalize(posB - posA);
+	vec3 aimZ = Normalize(target - pos);
 	vec3 aimY = Normalize(worldUp - aimZ * Dot(worldUp, aimZ));
 	vec3 aimX = Normalize(Cross(aimY, aimZ));
 

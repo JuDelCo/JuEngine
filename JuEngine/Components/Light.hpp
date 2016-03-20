@@ -21,11 +21,11 @@ class JUENGINEAPI Light : public IComponent
 		void Reset(const vec3 color, const float intensity = 1.f, const LightType type = LightType::LIGHT_POINT);
 
 		auto GetType() -> const LightType&;
-		void SetType(const LightType type);
+		auto SetType(const LightType type) -> Light*;
 		auto GetColor() -> const vec3&;
-		void SetColor(const vec3 color);
+		auto SetColor(const vec3 color) -> Light*;
 		auto GetIntensity() -> const float&;
-		void SetIntensity(const float intensity);
+		auto SetIntensity(const float intensity) -> Light*;
 
 	private:
 		LightType mType{LightType::LIGHT_POINT};

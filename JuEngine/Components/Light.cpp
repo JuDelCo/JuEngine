@@ -18,9 +18,11 @@ auto Light::GetType() -> const LightType&
 	return mType;
 }
 
-void Light::SetType(const LightType type)
+auto Light::SetType(const LightType type) -> Light*
 {
 	mType = type;
+
+	return this;
 }
 
 auto Light::GetColor() -> const vec3&
@@ -28,9 +30,11 @@ auto Light::GetColor() -> const vec3&
 	return mColor;
 }
 
-void Light::SetColor(const vec3 color)
+auto Light::SetColor(const vec3 color) -> Light*
 {
 	mColor = Math::Clamp(color);
+
+	return this;
 }
 
 auto Light::GetIntensity() -> const float&
@@ -38,8 +42,10 @@ auto Light::GetIntensity() -> const float&
 	return mIntensity;
 }
 
-void Light::SetIntensity(const float intensity)
+auto Light::SetIntensity(const float intensity) -> Light*
 {
 	mIntensity = intensity;
+
+	return this;
 }
 }

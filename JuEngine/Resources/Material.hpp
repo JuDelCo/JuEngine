@@ -6,40 +6,41 @@
 
 #include "../Resources/IObject.hpp"
 #include "../Resources/Math.hpp"
+#include <vector>
 
 namespace JuEngine
 {
 class Shader;
+class Texture;
 
 class JUENGINEAPI Material : public IObject
 {
 	public:
-		Material(const std::string& shaderName, const std::string& textureName);
+		Material(const Identifier& shaderId);
+		Material(const Identifier& shaderId, const Identifier& textureId);
 
 		void Use();
 
 		auto GetDiffuseColor() -> const vec3&;
-		void SetDiffuseColor(const vec3 diffuseColor);
+		auto SetDiffuseColor(const vec3 diffuseColor) -> Material*;
 
 		auto GetSpecularColor() -> const vec3&;
-		void SetSpecularColor(const vec3 specularColor);
+		auto SetSpecularColor(const vec3 specularColor) -> Material*;
 
 		auto GetShininessFactor() -> const float&;
-		void SetShininessFactor(const float shininessFactor);
+		auto SetShininessFactor(const float shininessFactor) -> Material*;
 
 		auto GetShader() -> Shader*;
-		void SetShader(const Identifier& id);
+		auto SetShader(const Identifier& id) -> Material*;
 
-		// TODO
-		// auto GetTexture() -> Texture*;
-		// void SetTexture(const Identifier& id);
+		auto GetTexture(const unsigned int unit = 0) -> Texture*;
+		auto AddTexture(const Identifier& id, const unsigned int unit = 0) -> Material*;
 
 	private:
 		vec3 mDiffuseColor{1.f, 0.f, 1.f};
 		vec3 mSpecularColor{1.f, 1.f, 1.f};
 		float mShininessFactor{0.1f};
 		Shader* mShader{nullptr};
-		// TODO
-		//Texture* mTexture;
+		std::vector<Texture*> mTextures{16, nullptr};
 };
 }

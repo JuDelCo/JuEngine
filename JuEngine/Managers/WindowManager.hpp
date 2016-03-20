@@ -26,6 +26,7 @@ class JUENGINEAPI WindowManager : public IWindowService
 		void SetClipboardString(const std::string& text);
 		auto GetRenderer() -> std::shared_ptr<Renderer>;
 		void SetRenderer(std::shared_ptr<Renderer> renderer);
+		void SetCursorMode(WindowCursorMode mode);
 
 		void CallbackWindowSize(GLFWwindow* window, int width, int height);
 		void CallbackFramebufferSize(GLFWwindow* window, int width, int height);

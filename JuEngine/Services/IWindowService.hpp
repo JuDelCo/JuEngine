@@ -14,6 +14,13 @@ namespace JuEngine
 {
 class Renderer;
 
+enum class WindowCursorMode
+{
+	Normal,
+	Hidden,
+	Capture
+};
+
 class JUENGINEAPI IWindowService : public IObject
 {
 	friend class AppController;
@@ -32,6 +39,7 @@ class JUENGINEAPI IWindowService : public IObject
 		virtual void SetClipboardString(const std::string& text) = 0;
 		virtual auto GetRenderer() -> std::shared_ptr<Renderer> = 0;
 		virtual void SetRenderer(std::shared_ptr<Renderer> renderer) = 0;
+		virtual void SetCursorMode(WindowCursorMode mode) = 0;
 
 		virtual void CallbackWindowSize(GLFWwindow* window, int width, int height) = 0;
 		virtual void CallbackFramebufferSize(GLFWwindow* window, int width, int height) = 0;

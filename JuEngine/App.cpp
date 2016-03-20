@@ -32,10 +32,10 @@ auto App::Get(const std::type_index type, const Identifier& id) -> void*
 			return (*mServices)[type].begin()->second.get();
 		}
 
-		App::Log()->Warning("Warning: App.Get: No service of type '%u' with id '%s' found", type, id.GetStringRef().c_str());
+		App::Log()->Warning("Warning: App.Get: No service of type '%s' with id '%s' found", type.name(), id.GetStringRef().c_str());
 	}
 
-	App::Log()->Warning("Warning: App.Get: No services of type '%u' found", type);
+	App::Log()->Warning("Warning: App.Get: No services of type '%s' found", type.name());
 
 	return nullptr;
 }
@@ -49,7 +49,7 @@ void App::Provide(const std::type_index type, const Identifier& id, void* servic
 
 	if((*mServices)[type].count(id) > 0)
 	{
-		App::Log()->Warning("Warning, provided an existing service of type '%u' with id '%s'. The previous service has been unloaded.", type, id.GetStringRef().c_str());
+		App::Log()->Warning("Warning, provided an existing service of type '%s' with id '%s'. The previous service has been unloaded.", type.name(), id.GetStringRef().c_str());
 	}
 
 	(*mServices)[type][id] = std::shared_ptr<void>(service);

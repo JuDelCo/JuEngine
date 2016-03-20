@@ -130,7 +130,7 @@ void LevelManager::Add(std::shared_ptr<Level> level, std::type_index type)
 {
 	if(mLevels.count(type) != 0)
 	{
-		App::Log()->Warning("Warning: LevelManager.Add: Level of type %s exists already", type.name());
+		App::Log()->Warning("Warning: LevelManager.Add: Level of type '%s' exists already", type.name());
 
 		return;
 	}
@@ -161,7 +161,7 @@ auto LevelManager::Get(std::type_index type) -> Level*
 		return &*mLevels.at(type);
 	}
 
-	App::Log()->Warning("Warning: LevelManager.Get: No level found of type %s", type.name());
+	App::Log()->Warning("Warning: LevelManager.Get: No level found of type '%s'", type.name());
 
 	return nullptr;
 }

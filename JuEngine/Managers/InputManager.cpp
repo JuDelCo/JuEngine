@@ -3,9 +3,12 @@
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
 #include "InputManager.hpp"
-#include "../OpenGL.hpp"
 #include "../App.hpp"
 #include "../Services/IWindowService.hpp"
+
+// TODO: Expose new functions in WindowService and remove this dependency
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 
 namespace JuEngine
 {
