@@ -26,29 +26,34 @@ enum class MeshDrawMode
 	Polygon
 };
 
+class Shader;
+class Material;
+
 class JUENGINEAPI Mesh : public IObject
 {
 	public:
-		Mesh(const std::string& meshPath, const MeshDrawMode drawMode = MeshDrawMode::Triangles);
-		Mesh(const std::vector<float>& vertexArray, const std::vector<unsigned int>& indexArray, const MeshDrawMode drawMode);
+		Mesh(const std::vector<float>& vertexArray, const std::vector<unsigned int>& indexArray, const MeshDrawMode drawMode, Material* material = nullptr);
 		~Mesh();
 
-		void Use();
+		void Use(Shader* shader);
 		static void DisableMeshes();
-		auto GetVertexCount() const -> const unsigned int&;
-		auto GetIndexCount() const -> const unsigned int&;
-		auto GetDrawMode() const -> const GLenum&;
 
-		static const unsigned int mNumVertexAttr{11};
+		auto GetNumVertexAttr() const -> const unsigned int;
+		auto GetVertexCount() const -> const unsigned int;
+		auto GetIndexCount() const -> const unsigned int;
+		auto GetDrawMode() const -> const GLenum;
+
+		auto GetMaterial() const -> Material*;
+		auto SetMaterial(Material* material) -> Mesh*;
 
 	private:
-		void Create(const std::vector<float>& vertexArray, const std::vector<unsigned int>& indexArray, const MeshDrawMode drawMode);
-
 		GLuint mVBO; // Vertex buffer object
 		GLuint mVAO; // Vertex array object
-		GLuint mEBO; // Element buffer object || Index buffer object
+		GLuint mEBO; // Element buffer object | Index buffer object
+		unsigned int mNumVertexAttr{11};
 		unsigned int mVertexCount{0};
 		unsigned int mIndexCount{0};
 		GLenum mDrawMode;
+		Material* mMaterial;
 };
 }

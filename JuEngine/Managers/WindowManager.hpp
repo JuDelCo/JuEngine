@@ -27,13 +27,17 @@ class JUENGINEAPI WindowManager : public IWindowService
 		auto GetRenderer() -> std::shared_ptr<Renderer>;
 		void SetRenderer(std::shared_ptr<Renderer> renderer);
 		void SetCursorMode(WindowCursorMode mode);
+		auto GetKeyState(int key) -> WindowInputState;
+		auto GetMouseButtonState(int button) -> WindowInputState;
+		void GetCursorPosition(double* xPos, double* yPos);
+		void SetCursorPosition(double xPos, double yPos);
 
-		void CallbackWindowSize(GLFWwindow* window, int width, int height);
-		void CallbackFramebufferSize(GLFWwindow* window, int width, int height);
-		void CallbackWindowPosition(GLFWwindow* window, int xPos, int yPos);
-		void CallbackWindowFocus(GLFWwindow* window, int focused);
-		void CallbackDrop(GLFWwindow* window, int count, const char** paths);
-		void CallbackClose(GLFWwindow* window);
+		void CallbackWindowSize(int width, int height);
+		void CallbackFramebufferSize(int width, int height);
+		void CallbackWindowPosition(int xPos, int yPos);
+		void CallbackWindowFocus(int focused);
+		void CallbackDrop(int count, const char** paths);
+		void CallbackClose();
 
 	protected:
 		void Load();

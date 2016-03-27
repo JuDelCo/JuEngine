@@ -6,10 +6,6 @@
 #include "../App.hpp"
 #include "../Services/IWindowService.hpp"
 
-// TODO: Expose new functions in WindowService and remove this dependency
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-
 namespace JuEngine
 {
 InputManager::InputManager()
@@ -27,17 +23,17 @@ void InputManager::Update()
 	for(auto &key : mKeyBindings)
 	{
 		key.second.prevPressed = key.second.pressed;
-		key.second.pressed = (glfwGetKey(App::Window()->GetWindow(), key.second.key) == GLFW_PRESS);
+		key.second.pressed = (App::Window()->GetKeyState(key.second.key) == WindowInputState::Pressed);
 	}
 
 	for(auto &button : mMouseBindings)
 	{
 		button.second.prevPressed = button.second.pressed;
-		button.second.pressed = (glfwGetMouseButton(App::Window()->GetWindow(), button.second.button) == GLFW_PRESS);
+		button.second.pressed = (App::Window()->GetMouseButtonState(button.second.button) == WindowInputState::Pressed);
 	}
 
 	double xPos, yPos;
-	glfwGetCursorPos(App::Window()->GetWindow(), &xPos, &yPos);
+	App::Window()->GetCursorPosition(&xPos, &yPos);
 	mMousePosition = vec2(xPos, yPos);
 
 	mMouseWheelDeltaPrev = mMouseWheelDelta;
@@ -123,7 +119,7 @@ auto InputManager::MouseGetPosition() -> const vec2&
 
 void InputManager::MouseSetPosition(const vec2 position)
 {
-	glfwSetCursorPos(App::Window()->GetWindow(), position.x, position.y);
+	App::Window()->SetCursorPosition(position.x, position.y);
 
 	mMousePosition = position;
 }
@@ -146,23 +142,23 @@ bool InputManager::IsMouseOverWindow()
 	return false;
 }
 
-void InputManager::CallbackKeyEvent(GLFWwindow* window, int key, int scanCode, int action, int mods)
+void InputManager::CallbackKeyEvent(int key, int scanCode, int action, int mods)
 {
 }
 
-void InputManager::CallbackTextEvent(GLFWwindow* window, unsigned int codePoint)
+void InputManager::CallbackTextEvent(unsigned int codePoint)
 {
 }
 
-void InputManager::CallbackMouseMoveEvent(GLFWwindow* window, double xPos, double yPos)
+void InputManager::CallbackMouseMoveEvent(double xPos, double yPos)
 {
 }
 
-void InputManager::CallbackMouseButtonEvent(GLFWwindow* window, int button, int action, int mods)
+void InputManager::CallbackMouseButtonEvent(int button, int action, int mods)
 {
 }
 
-void InputManager::CallbackMouseScrollEvent(GLFWwindow* window, double xOffset, double yOffset)
+void InputManager::CallbackMouseScrollEvent(double xOffset, double yOffset)
 {
 	mMouseWheelDelta = yOffset;
 }

@@ -4,9 +4,7 @@
 
 #include "Texture.hpp"
 #include "../App.hpp"
-
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
 
 #define STBI_ONLY_PNG
 #define STBI_ONLY_HDR
@@ -15,15 +13,20 @@
 
 namespace JuEngine
 {
+static unsigned int lastTextureUnit = 0;
+
 Texture::Texture(const std::string& texturePath, const bool generateMipMaps)
 {
 	static auto shadersPath = "Assets/Textures/";
+
+	mPath = texturePath;
 
 	glGenTextures(1, &mTexture);
 
 	glBindTexture(GL_TEXTURE_2D, mTexture);
 
 	int componentsPerPixel;
+	stbi_set_flip_vertically_on_load(true);
 	unsigned char *image = stbi_load((shadersPath + texturePath).c_str(), &mHeight, &mWidth, &componentsPerPixel, 0 /* STBI_rgb_alpha == 4 */);
 
 	if(image == nullptr)
@@ -80,14 +83,19 @@ void Texture::DisableTextures(unsigned int unit)
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-auto Texture::GetHeight() -> unsigned int
+auto Texture::GetHeight() const -> unsigned int
 {
 	return mHeight;
 }
 
-auto Texture::GetWidth() -> unsigned int
+auto Texture::GetWidth() const -> unsigned int
 {
 	return mWidth;
+}
+
+auto Texture::GetPath() const -> const std::string&
+{
+	return mPath;
 }
 
 auto Texture::GenerateMipMaps() -> Texture*
@@ -193,6 +201,10 @@ void Texture::ChangeTextureUnit(unsigned int unit)
 		unit = 0;
 	}
 
-	glActiveTexture(GL_TEXTURE0 + (0x1 * unit));
+	if(lastTextureUnit != unit)
+	{
+		glActiveTexture(GL_TEXTURE0 + (0x1 * unit));
+		lastTextureUnit = unit;
+	}
 }
 }

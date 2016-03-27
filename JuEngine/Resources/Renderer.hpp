@@ -10,6 +10,8 @@
 namespace JuEngine
 {
 class Pool;
+class MeshNode;
+class Shader;
 
 class JUENGINEAPI Renderer : public IObject
 {
@@ -22,6 +24,8 @@ class JUENGINEAPI Renderer : public IObject
 		void Reset();
 
 	protected:
+		virtual void RenderMeshNode(MeshNode* meshNode, Shader* shader) = 0;
+
 		std::vector<Pool*> mPools;
 };
 }

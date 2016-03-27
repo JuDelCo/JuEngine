@@ -7,8 +7,6 @@
 #include "../Resources/IObject.hpp"
 #include "../Resources/Math.hpp"
 
-class GLFWwindow;
-
 namespace JuEngine
 {
 typedef int KeyboardKey;
@@ -34,10 +32,10 @@ class JUENGINEAPI IInputService : public IObject
 		virtual bool IsMouseOverWindow() = 0;
 
 	protected:
-		virtual void CallbackKeyEvent(GLFWwindow* window, int key, int scanCode, int action, int mods) = 0;
-		virtual void CallbackTextEvent(GLFWwindow* window, unsigned int codePoint) = 0;
-		virtual void CallbackMouseMoveEvent(GLFWwindow* window, double xPos, double yPos) = 0;
-		virtual void CallbackMouseButtonEvent(GLFWwindow* window, int button, int action, int mods) = 0;
-		virtual void CallbackMouseScrollEvent(GLFWwindow* window, double xOffset, double yOffset) = 0;
+		virtual void CallbackKeyEvent(int key, int scanCode, int action, int mods) = 0;
+		virtual void CallbackTextEvent(unsigned int codePoint) = 0;
+		virtual void CallbackMouseMoveEvent(double xPos, double yPos) = 0;
+		virtual void CallbackMouseButtonEvent(int button, int action, int mods) = 0;
+		virtual void CallbackMouseScrollEvent(double xOffset, double yOffset) = 0;
 };
 }

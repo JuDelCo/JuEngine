@@ -5,23 +5,22 @@
 #pragma once
 
 #include "../Entity/IComponent.hpp"
-#include "../Resources/Mesh.hpp"
-#include "../Resources/Material.hpp"
+#include "../Resources/MeshNode.hpp"
+#include "../Resources/Shader.hpp"
 
 namespace JuEngine
 {
 class JUENGINEAPI MeshRenderer : public IComponent
 {
 	public:
-		auto GetMesh() -> Mesh*;
-		auto GetMaterial() -> Material*;
-		auto GetForceDraw() -> const bool&;
+		auto GetMeshNode() -> MeshNode*;
+		auto GetShader() -> Shader*;
 
-		void Reset(const std::string& meshName, const std::string& materialName, const bool forceDraw = false);
+		void Reset(const std::string& meshNodeName, const std::string& shaderName);
 
 	private:
-		Mesh* mMesh;
-		Material* mMaterial;
-		bool mForceDraw{false};
+		MeshNode* mMeshNode;
+		Shader* mShader;
+
 };
 }

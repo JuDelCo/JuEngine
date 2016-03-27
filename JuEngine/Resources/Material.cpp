@@ -10,35 +10,35 @@
 
 namespace JuEngine
 {
-Material::Material(const Identifier& shaderId) : IObject("material")
+Material::Material() : IObject("material")
 {
-	SetShader(shaderId);
 }
 
-Material::Material(const Identifier& shaderId, const Identifier& textureId) : IObject("material")
+void Material::Use(Shader* shader)
 {
-	SetShader(shaderId);
-	AddTexture(textureId, 0);
-}
-
-void Material::Use()
-{
-	if(mShader)
+	if(shader == nullptr)
 	{
-		mShader->Use();
-
-		for(unsigned int i = 0; i < 16; ++i)
-		{
-			if(mTextures[i] != nullptr)
-			{
-				mTextures[i]->Use(i);
-			}
-		}
-
 		return;
 	}
 
-	Shader::DisableShaders();
+	shader->SetUniform("material.diffuseColor", mDiffuseColor);
+	shader->SetUniform("material.specularColor", mSpecularColor);
+	shader->SetUniform("material.shininess", mShininessFactor);
+
+	unsigned int counter = 0;
+
+	if(! mTextures.empty())
+	{
+		for(auto& pair : mTextures)
+		{
+			shader->SetUniformTexture("material." + pair.first, counter);
+			pair.second->Use(counter++);
+		}
+	}
+	else
+	{
+		Texture::DisableTextures();
+	}
 }
 
 auto Material::GetDiffuseColor() -> const vec3&
@@ -77,26 +77,22 @@ auto Material::SetShininessFactor(const float shininessFactor) -> Material*
 	return this;
 }
 
-auto Material::GetShader() -> Shader*
+auto Material::GetTexture(const std::string& name) -> Texture*
 {
-	return mShader;
+	if(mTextures.find(name) == mTextures.end())
+	{
+		return nullptr;
+	}
+
+	return mTextures.at(name);
 }
 
-auto Material::SetShader(const Identifier& id) -> Material*
+auto Material::SetTexture(const std::string& name, Texture* texture) -> Material*
 {
-	mShader = App::Data()->Get<Shader>(id);
-
-	return this;
-}
-
-auto Material::GetTexture(const unsigned int unit) -> Texture*
-{
-	return mTextures[unit];
-}
-
-auto Material::AddTexture(const Identifier& id, const unsigned int unit) -> Material*
-{
-	mTextures[unit] = App::Data()->Get<Texture>(id);
+	if(texture != nullptr)
+	{
+		mTextures[name] = texture;
+	}
 
 	return this;
 }

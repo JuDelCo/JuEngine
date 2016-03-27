@@ -26,9 +26,9 @@ class JUENGINEAPI Transform : public IComponent
 		vec3 GetScale() const;
 		vec3 GetEulerAngles();
 		quat GetRotation() const;
-		auto Right() -> const vec3&;
-		auto Up() -> const vec3&;
-		auto Forward() -> const vec3&;
+		auto Right() -> const vec3;
+		auto Up() -> const vec3;
+		auto Forward() -> const vec3;
 		auto GetLocalPosition() const -> const vec3&;
 		auto GetLocalScale() const -> const vec3&;
 		auto GetLocalEulerAngles() -> const vec3&;
@@ -37,6 +37,9 @@ class JUENGINEAPI Transform : public IComponent
 		void SetLocalScale(const vec3 scale);
 		void SetLocalEulerAngles(const vec3 eulerAngles);
 		void SetLocalRotation(const quat orientation);
+		auto LocalRight() -> const vec3&;
+		auto LocalUp() -> const vec3&;
+		auto LocalForward() -> const vec3&;
 		void Translate(const vec3 translation, const bool relativeToWorld = false);
 		void Translate(const vec3 translation, Transform* relativeTo);
 		void Scale(const vec3 scale);

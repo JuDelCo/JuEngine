@@ -14,6 +14,12 @@ namespace JuEngine
 {
 class Renderer;
 
+enum class WindowInputState
+{
+	Pressed,
+	Released
+};
+
 enum class WindowCursorMode
 {
 	Normal,
@@ -40,13 +46,17 @@ class JUENGINEAPI IWindowService : public IObject
 		virtual auto GetRenderer() -> std::shared_ptr<Renderer> = 0;
 		virtual void SetRenderer(std::shared_ptr<Renderer> renderer) = 0;
 		virtual void SetCursorMode(WindowCursorMode mode) = 0;
+		virtual auto GetKeyState(int key) -> WindowInputState = 0;
+		virtual auto GetMouseButtonState(int button) -> WindowInputState = 0;
+		virtual void GetCursorPosition(double* xPos, double* yPos) = 0;
+		virtual void SetCursorPosition(double xPos, double yPos) = 0;
 
-		virtual void CallbackWindowSize(GLFWwindow* window, int width, int height) = 0;
-		virtual void CallbackFramebufferSize(GLFWwindow* window, int width, int height) = 0;
-		virtual void CallbackWindowPosition(GLFWwindow* window, int xPos, int yPos) = 0;
-		virtual void CallbackWindowFocus(GLFWwindow* window, int focused) = 0;
-		virtual void CallbackDrop(GLFWwindow* window, int count, const char** paths) = 0;
-		virtual void CallbackClose(GLFWwindow* window) = 0;
+		virtual void CallbackWindowSize(int width, int height) = 0;
+		virtual void CallbackFramebufferSize(int width, int height) = 0;
+		virtual void CallbackWindowPosition(int xPos, int yPos) = 0;
+		virtual void CallbackWindowFocus(int focused) = 0;
+		virtual void CallbackDrop(int count, const char** paths) = 0;
+		virtual void CallbackClose() = 0;
 
 	protected:
 		virtual void Load() = 0;

@@ -31,11 +31,11 @@ class JUENGINEAPI InputManager : public IInputService
 		bool IsMouseOverWindow();
 
 	protected:
-		void CallbackKeyEvent(GLFWwindow* window, int key, int scanCode, int action, int mods);
-		void CallbackTextEvent(GLFWwindow* window, unsigned int codePoint);
-		void CallbackMouseMoveEvent(GLFWwindow* window, double xPos, double yPos);
-		void CallbackMouseButtonEvent(GLFWwindow* window, int button, int action, int mods);
-		void CallbackMouseScrollEvent(GLFWwindow* window, double xOffset, double yOffset);
+		void CallbackKeyEvent(int key, int scanCode, int action, int mods);
+		void CallbackTextEvent(unsigned int codePoint);
+		void CallbackMouseMoveEvent(double xPos, double yPos);
+		void CallbackMouseButtonEvent(int button, int action, int mods);
+		void CallbackMouseScrollEvent(double xOffset, double yOffset);
 
 	private:
 		std::unordered_map<Identifier, KeyInfo> mKeyBindings;

@@ -18,14 +18,17 @@ class JUENGINEAPI ForwardRenderer : public Renderer
 
 		void Render();
 
+	protected:
+		void RenderMeshNode(MeshNode* meshNode, Shader* shader);
+
 	private:
 		GLuint mGlobalMatrixBindingIndex{0};
 		GLuint mGlobalMatrixUBO;
-		GLuint mWorldBindingIndex{1};
-		GLuint mWorldUBO;
-		GLuint mMaterialBindingIndex{2};
-		GLuint mMaterialUBO;
-		GLuint mLightBindingIndex{3};
-		GLuint mLightUBO;
+		//GLuint mWorldBindingIndex{1};
+		//GLuint mWorldUBO;
+		//GLuint mMaterialBindingIndex{2};
+		//GLuint mMaterialUBO;
+		//GLuint mLightBindingIndex{3};
+		//GLuint mLightUBO;
 };
 }

@@ -7,6 +7,7 @@
 #include "../Resources/IObject.hpp"
 #include "../Resources/Math.hpp"
 #include <vector>
+#include <map>
 #include <unordered_map>
 
 typedef unsigned int GLenum;
@@ -39,9 +40,9 @@ class JUENGINEAPI Shader : public IObject
 		void AddShader(const GLenum shaderType, const std::string& shaderPath);
 		void Reload(const bool forceLoad = false);
 
-		void PrintAttributeNames();
-		void PrintUniformNames();
-		void PrintUniformBlockNames();
+		auto PrintAttributeNames() -> std::string;
+		auto PrintUniformNames() -> std::string;
+		auto PrintUniformBlockNames() -> std::string;
 
 	private:
 		auto GetUniformLocation(const std::string& name) -> GLint;
@@ -51,7 +52,7 @@ class JUENGINEAPI Shader : public IObject
 		static auto GetUniformLocation(const GLuint shaderProgram, const std::string& name) -> GLint;
 		static auto GetUniformBlockLocation(const GLuint shaderProgram, const std::string& name) -> GLint;
 
-		std::unordered_map<std::string, GLint> mUniformCache;
+		std::map<std::string, GLint> mUniformCache;
 		std::unordered_map<GLenum, std::string> mShaderFiles;
 		GLuint mShaderProgram{0};
 };

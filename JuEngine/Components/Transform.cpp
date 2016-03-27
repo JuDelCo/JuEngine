@@ -78,40 +78,34 @@ quat Transform::GetRotation() const
 	return GetLocalRotation();
 }
 
-auto Transform::Right() -> const vec3&
+auto Transform::Right() -> const vec3
 {
-	if(mRightRefreshNeeded)
+	if(mParent)
 	{
-		mRightCache = mOrientation * vec3(1.f, 0.f, 0.f);
-
-		mRightRefreshNeeded = false;
+		return mParent->GetRotation() * LocalRight();
 	}
 
-	return mRightCache;
+	return LocalRight();
 }
 
-auto Transform::Up() -> const vec3&
+auto Transform::Up() -> const vec3
 {
-	if(mUpRefreshNeeded)
+	if(mParent)
 	{
-		mUpCache = mOrientation * vec3(0.f, 1.f, 0.f);
-
-		mUpRefreshNeeded = false;
+		return mParent->GetRotation() * LocalUp();
 	}
 
-	return mUpCache;
+	return LocalUp();
 }
 
-auto Transform::Forward() -> const vec3&
+auto Transform::Forward() -> const vec3
 {
-	if(mForwardRefreshNeeded)
+	if(mParent)
 	{
-		mForwardCache = mOrientation * vec3(0.f, 0.f, 1.f);
-
-		mForwardRefreshNeeded = false;
+		return mParent->GetRotation() * LocalForward();
 	}
 
-	return mForwardCache;
+	return LocalForward();
 }
 
 auto Transform::GetLocalPosition() const -> const vec3&
@@ -177,6 +171,42 @@ void Transform::SetLocalRotation(const quat orientation)
 	mForwardRefreshNeeded = true;
 	mMatrixRefreshNeeded = true;
 	mInverseMatrixRefreshNeeded = true;
+}
+
+auto Transform::LocalRight() -> const vec3&
+{
+	if(mRightRefreshNeeded)
+	{
+		mRightCache = mOrientation * vec3(1.f, 0.f, 0.f);
+
+		mRightRefreshNeeded = false;
+	}
+
+	return mRightCache;
+}
+
+auto Transform::LocalUp() -> const vec3&
+{
+	if(mUpRefreshNeeded)
+	{
+		mUpCache = mOrientation * vec3(0.f, 1.f, 0.f);
+
+		mUpRefreshNeeded = false;
+	}
+
+	return mUpCache;
+}
+
+auto Transform::LocalForward() -> const vec3&
+{
+	if(mForwardRefreshNeeded)
+	{
+		mForwardCache = mOrientation * vec3(0.f, 0.f, 1.f);
+
+		mForwardRefreshNeeded = false;
+	}
+
+	return mForwardCache;
 }
 
 void Transform::Translate(const vec3 translation, const bool relativeToWorld)

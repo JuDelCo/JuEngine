@@ -38,8 +38,9 @@ class JUENGINEAPI Texture : public IObject
 		void Use(unsigned int unit = 0);
 		static void DisableTextures(unsigned int unit = 0);
 
-		auto GetHeight() -> unsigned int;
-		auto GetWidth() -> unsigned int;
+		auto GetHeight() const -> unsigned int;
+		auto GetWidth() const -> unsigned int;
+		auto GetPath() const -> const std::string&;
 
 		auto GenerateMipMaps() -> Texture*;
 		auto SetTextureWrapping(const TextureWrappingMode mode) -> Texture*;
@@ -53,5 +54,6 @@ class JUENGINEAPI Texture : public IObject
 		GLuint mTexture{0};
 		int mHeight{0};
 		int mWidth{0};
+		std::string mPath;
 };
 }

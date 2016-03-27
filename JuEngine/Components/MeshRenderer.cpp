@@ -8,25 +8,19 @@
 
 namespace JuEngine
 {
-void MeshRenderer::Reset(const std::string& meshName, const std::string& materialName, const bool forceDraw)
+void MeshRenderer::Reset(const std::string& meshNodeName, const std::string& shaderName)
 {
-	mMesh = App::Data()->Get<Mesh>(meshName);
-	mMaterial = App::Data()->Get<Material>(materialName);
-	mForceDraw = forceDraw;
+	mMeshNode = App::Data()->Get<MeshNode>(meshNodeName);
+	mShader = App::Data()->Get<Shader>(shaderName);
 }
 
-auto MeshRenderer::GetMesh() -> Mesh*
+auto MeshRenderer::GetMeshNode() -> MeshNode*
 {
-	return mMesh;
+	return mMeshNode;
 }
 
-auto MeshRenderer::GetMaterial() -> Material*
+auto MeshRenderer::GetShader() -> Shader*
 {
-	return mMaterial;
-}
-
-auto MeshRenderer::GetForceDraw() -> const bool&
-{
-	return mForceDraw;
+	return mShader;
 }
 }

@@ -48,4 +48,52 @@ auto Light::SetIntensity(const float intensity) -> Light*
 
 	return this;
 }
+
+auto Light::GetLinearAttenuation() -> const float&
+{
+	return mLinearAttenuation;
+}
+
+auto Light::SetLinearAttenuation(const float linearAttenuation) -> Light*
+{
+	mLinearAttenuation = linearAttenuation;
+
+	return this;
+}
+
+auto Light::GetQuadraticAttenuation() -> const float&
+{
+	return mQuadraticAttenuation;
+}
+
+auto Light::SetQuadraticAttenuation(const float quadraticAttenuation) -> Light*
+{
+	mQuadraticAttenuation = quadraticAttenuation;
+
+	return this;
+}
+
+auto Light::GetSpotCutOff() -> const float&
+{
+	return mSpotCutOff;
+}
+
+auto Light::SetSpotCutOff(const float degrees) -> Light*
+{
+	mSpotCutOff = cos(Math::DegToRad(degrees));
+
+	return this;
+}
+
+auto Light::GetSpotOuterCutOff() -> const float&
+{
+	return mSpotOuterCutOff;
+}
+
+auto Light::SetSpotOuterCutOff(const float degrees) -> Light*
+{
+	mSpotOuterCutOff = cos(Math::DegToRad(degrees));
+
+	return this;
+}
 }

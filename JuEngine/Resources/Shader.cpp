@@ -7,12 +7,13 @@
 #include "../Services/IDataService.hpp"
 #include <fstream>
 #include <streambuf>
-
+#include <sstream>
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
 
 namespace JuEngine
 {
+static GLuint lastShaderProgram = 0;
+
 Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath) : IObject("shader")
 {
 	static auto shadersPath = "Assets/Shaders/";
@@ -30,7 +31,11 @@ Shader::~Shader()
 
 void Shader::Use()
 {
-	glUseProgram(mShaderProgram);
+	if(mShaderProgram != lastShaderProgram)
+	{
+		glUseProgram(mShaderProgram);
+		lastShaderProgram = mShaderProgram;
+	}
 }
 
 void Shader::ReloadAll()
@@ -168,45 +173,28 @@ void Shader::Reload(const bool forceLoad)
 		}
 
 		mShaderProgram = shaderProgram;
-
-		// TODO: Better names (define uses)
-		glUseProgram(mShaderProgram);
-		SetUniformTexture("texture0", 0);
-		SetUniformTexture("texture1", 1);
-		SetUniformTexture("texture2", 2);
-		SetUniformTexture("texture3", 3);
-		SetUniformTexture("texture4", 4);
-		SetUniformTexture("texture5", 5);
-		SetUniformTexture("texture6", 6);
-		SetUniformTexture("texture7", 7);
-		SetUniformTexture("texture8", 8);
-		SetUniformTexture("texture9", 9);
-		SetUniformTexture("texture10", 10);
-		SetUniformTexture("texture11", 11);
-		SetUniformTexture("texture12", 12);
-		SetUniformTexture("texture13", 13);
-		SetUniformTexture("texture14", 14);
-		SetUniformTexture("texture15", 15);
-		glUseProgram(0);
+		lastShaderProgram = 0;
 
 		// TODO: Shader: UBO indexes -> Renderer (ForwardRenderer)
 		BindUniformBlock("GlobalMatrices", 0);
-		BindUniformBlock("World", 1);
-		BindUniformBlock("Material", 2);
-		BindUniformBlock("Light", 3);
+		//BindUniformBlock("World", 1);
+		//BindUniformBlock("Material", 2);
+		//BindUniformBlock("Light", 3);
 
 		mUniformCache.clear();
 	}
 }
 
-void Shader::PrintAttributeNames()
+auto Shader::PrintAttributeNames() -> std::string
 {
 	GLint numActiveAttribs = 0;
 	glGetProgramInterfaceiv(mShaderProgram, GL_PROGRAM_INPUT, GL_ACTIVE_RESOURCES, &numActiveAttribs);
 
-    const GLuint numProperties = 4, numValues = 4;
+	const GLuint numProperties = 4, numValues = 4;
 	const GLenum properties[numProperties] = {GL_NAME_LENGTH, GL_TYPE, GL_LOCATION, GL_ARRAY_SIZE};
 	GLint values[numValues];
+
+	std::stringstream ss;
 
 	for(int attrIndex = 0; attrIndex < numActiveAttribs; ++attrIndex)
 	{
@@ -214,7 +202,8 @@ void Shader::PrintAttributeNames()
 
 		char buffer[values[0]];
 		glGetProgramResourceName(mShaderProgram, GL_PROGRAM_INPUT, attrIndex, values[0], NULL, buffer);
-		App::Log()->Info("> %s", buffer);
+
+		ss << "> " << buffer << std::endl;
 
 		std::string uTypeText;
 		GLuint uTypeSize;
@@ -249,21 +238,25 @@ void Shader::PrintAttributeNames()
 			default: 					uTypeText = "Unknown"; 				uTypeSize = 0; 						break;
 		}
 
-		App::Log()->Info("     location: %i", values[2]);
-		App::Log()->Info("     type: %s", uTypeText.c_str());
-		App::Log()->Info("     size: %i bytes", uTypeSize);
-		App::Log()->Info("     elements: %i", values[3]);
+		ss << "     location: " << values[2] << std::endl;
+		ss << "     type: " << uTypeText << std::endl;
+		ss << "     size: " << uTypeSize << " bytes" << std::endl;
+		ss << "     elements: " << values[3] << std::endl;
 	}
+
+	return ss.str();
 }
 
-void Shader::PrintUniformNames()
+auto Shader::PrintUniformNames() -> std::string
 {
 	GLint numActiveUniforms = 0;
 	glGetProgramInterfaceiv(mShaderProgram, GL_UNIFORM, GL_ACTIVE_RESOURCES, &numActiveUniforms);
 
-    const GLuint numProperties = 7, numValues = 7;
+	const GLuint numProperties = 7, numValues = 7;
 	const GLenum properties[numProperties] = {GL_NAME_LENGTH, GL_TYPE, GL_LOCATION, GL_ARRAY_SIZE, GL_BLOCK_INDEX, GL_ARRAY_STRIDE, GL_MATRIX_STRIDE};
 	GLint values[numValues];
+
+	std::stringstream ss;
 
 	for(int uniformIndex = 0; uniformIndex < numActiveUniforms; ++uniformIndex)
 	{
@@ -274,7 +267,8 @@ void Shader::PrintUniformNames()
 
 		char buffer[values[0]];
 		glGetProgramResourceName(mShaderProgram, GL_UNIFORM, uniformIndex, values[0], NULL, buffer);
-		App::Log()->Info("> %s", buffer);
+
+		ss << "> " << buffer << std::endl;
 
 		std::string uTypeText;
 		GLuint uTypeSize;
@@ -309,30 +303,34 @@ void Shader::PrintUniformNames()
 			default: 					uTypeText = "Unknown"; 				uTypeSize = 0; 						break;
 		}
 
-		App::Log()->Info("     location: %i", values[2]);
-		App::Log()->Info("     type: %s", uTypeText.c_str());
-		App::Log()->Info("     size: %i bytes", uTypeSize);
-		App::Log()->Info("     elements: %i", values[3]);
-		App::Log()->Info("     array stride: %i bytes", values[5]);
-		App::Log()->Info("     matrix stride: %i bytes", values[6]);
+		ss << "     location: " << values[2] << std::endl;
+		ss << "     type: " << uTypeText << std::endl;
+		ss << "     size: " << uTypeSize << " bytes" << std::endl;
+		ss << "     elements: " << values[3] << std::endl;
+		ss << "     array stride: " << values[5] << " bytes" << std::endl;
+		ss << "     matrix stride: " << values[6] << " bytes" << std::endl;
 	}
+
+	return ss.str();
 }
 
-void Shader::PrintUniformBlockNames()
+auto Shader::PrintUniformBlockNames() -> std::string
 {
 	GLint numActiveUniformBlocks = 0;
 	glGetProgramInterfaceiv(mShaderProgram, GL_UNIFORM_BLOCK, GL_ACTIVE_RESOURCES, &numActiveUniformBlocks);
 
-    const GLuint numProperties = 4, numValues = 4;
+	const GLuint numProperties = 4, numValues = 4;
 	const GLenum properties[numProperties] = {GL_NAME_LENGTH, GL_NUM_ACTIVE_VARIABLES, GL_BUFFER_BINDING, GL_BUFFER_DATA_SIZE};
 	GLint values[numValues];
 
 	GLint numActiveUniforms = 0;
 	glGetProgramInterfaceiv(mShaderProgram, GL_UNIFORM, GL_ACTIVE_RESOURCES, &numActiveUniforms);
 
-    const GLuint numPropertiesUnif = 7, numValuesUnif = 7;
+	const GLuint numPropertiesUnif = 7, numValuesUnif = 7;
 	const GLenum propertiesUnif[numPropertiesUnif] = {GL_NAME_LENGTH, GL_TYPE, GL_OFFSET, GL_ARRAY_SIZE, GL_BLOCK_INDEX, GL_ARRAY_STRIDE, GL_MATRIX_STRIDE};
 	GLint valuesUnif[numValuesUnif];
+
+	std::stringstream ss;
 
 	for(int uniformBlockIndex = 0; uniformBlockIndex < numActiveUniformBlocks; ++uniformBlockIndex)
 	{
@@ -340,10 +338,11 @@ void Shader::PrintUniformBlockNames()
 
 		char buffer[values[0]];
 		glGetProgramResourceName(mShaderProgram, GL_UNIFORM_BLOCK, uniformBlockIndex, values[0], NULL, buffer);
-		App::Log()->Info("> %s", buffer);
-		App::Log()->Info("     binding point: %i", values[2]);
-		App::Log()->Info("     total size: %i bytes", values[3]);
-		App::Log()->Info("     members: %i", values[1]);
+
+		ss << "> " << buffer << std::endl;
+		ss << "     binding point: " << values[2] << std::endl;
+		ss << "     total size: " << values[3] << " bytes" << std::endl;
+		ss << "     members: " << values[1] << std::endl;
 
 		for(int uniformIndex = 0; uniformIndex < numActiveUniforms; ++uniformIndex)
 		{
@@ -353,7 +352,8 @@ void Shader::PrintUniformBlockNames()
 
 			char bufferUnif[valuesUnif[0]];
 			glGetProgramResourceName(mShaderProgram, GL_UNIFORM, uniformIndex, valuesUnif[0], NULL, bufferUnif);
-			App::Log()->Info("     - %s", bufferUnif);
+
+			ss << "     - " << bufferUnif << std::endl;
 
 			std::string uTypeText;
 			GLuint uTypeSize;
@@ -388,12 +388,12 @@ void Shader::PrintUniformBlockNames()
 				default: 					uTypeText = "Unknown"; 				uTypeSize = 0; 						break;
 			}
 
-			App::Log()->Info("          offset: %i bytes", valuesUnif[2]);
-			App::Log()->Info("          type: %s", uTypeText.c_str());
-			App::Log()->Info("          size: %i bytes", uTypeSize);
-			App::Log()->Info("          elements: %i", valuesUnif[3]);
-			App::Log()->Info("          array stride: %i bytes", valuesUnif[5]);
-			App::Log()->Info("          matrix stride: %i bytes", valuesUnif[6]);
+			ss << "          offset: " << valuesUnif[2] << " bytes" << std::endl;
+			ss << "          type: " << uTypeText << std::endl;
+			ss << "          size: " << uTypeSize << " bytes" << std::endl;
+			ss << "          elements: " << valuesUnif[3] << std::endl;
+			ss << "          array stride: " << valuesUnif[5] << " bytes" << std::endl;
+			ss << "          matrix stride: " << valuesUnif[6] << " bytes" << std::endl;
 		}
 	}
 
@@ -481,6 +481,8 @@ void Shader::PrintUniformBlockNames()
 			}
 		}
 	}*/
+
+	return ss.str();
 }
 
 auto Shader::GetUniformLocation(const std::string& name) -> GLint

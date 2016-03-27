@@ -138,33 +138,53 @@ void WindowManager::SetCursorMode(WindowCursorMode mode)
 	glfwSetInputMode(mWindow, GLFW_CURSOR, cursorMode);
 }
 
-void WindowManager::CallbackWindowSize(GLFWwindow* window, int width, int height)
+auto WindowManager::GetKeyState(int key) -> WindowInputState
+{
+	return (glfwGetKey(mWindow, key) == GLFW_PRESS ? WindowInputState::Pressed : WindowInputState::Released);
+}
+
+auto WindowManager::GetMouseButtonState(int button) -> WindowInputState
+{
+	return (glfwGetMouseButton(mWindow, button) == GLFW_PRESS ? WindowInputState::Pressed : WindowInputState::Released);
+}
+
+void WindowManager::GetCursorPosition(double* xPos, double* yPos)
+{
+	glfwGetCursorPos(mWindow, xPos, yPos);
+}
+
+void WindowManager::SetCursorPosition(double xPos, double yPos)
+{
+	glfwSetCursorPos(mWindow, xPos, yPos);
+}
+
+void WindowManager::CallbackWindowSize(int width, int height)
 {
 	mWindowSize = vec2(width, height);
 }
 
-void WindowManager::CallbackFramebufferSize(GLFWwindow* window, int width, int height)
+void WindowManager::CallbackFramebufferSize(int width, int height)
 {
 	mWindowFramebufferSize = vec2(width, height);
 }
 
-void WindowManager::CallbackWindowPosition(GLFWwindow* window, int xPos, int yPos)
+void WindowManager::CallbackWindowPosition(int xPos, int yPos)
 {
 	mWindowPosition = vec2(xPos, yPos);
 }
 
-void WindowManager::CallbackWindowFocus(GLFWwindow* window, int focused)
+void WindowManager::CallbackWindowFocus(int focused)
 {
 	mWindowHasFocus = focused;
 }
 
-void WindowManager::CallbackDrop(GLFWwindow* window, int count, const char** paths)
+void WindowManager::CallbackDrop(int count, const char** paths)
 {
 	// TODO
 	// for(int i = 0;  i < count;  ++i) handle_dropped_file(paths[i]);
 }
 
-void WindowManager::CallbackClose(GLFWwindow* window)
+void WindowManager::CallbackClose()
 {
 	mWindowCloseRequested = true;
 }
@@ -257,40 +277,40 @@ void WindowManager::Load()
 	//glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
 	glfwSetWindowSizeCallback(mWindow, [](GLFWwindow* window, int width, int height) {
-		App::Window()->CallbackWindowSize(window, width, height);
+		App::Window()->CallbackWindowSize(width, height);
 	});
 	glfwSetFramebufferSizeCallback(mWindow, [](GLFWwindow* window, int width, int height) {
-		App::Window()->CallbackFramebufferSize(window, width, height);
+		App::Window()->CallbackFramebufferSize(width, height);
 	});
 	glfwSetWindowPosCallback(mWindow, [](GLFWwindow* window, int xPos, int yPos) {
-		App::Window()->CallbackWindowPosition(window, xPos, yPos);
+		App::Window()->CallbackWindowPosition(xPos, yPos);
 	});
 	glfwSetWindowFocusCallback(mWindow, [](GLFWwindow* window, int focused) {
-		App::Window()->CallbackWindowFocus(window, focused);
+		App::Window()->CallbackWindowFocus(focused);
 	});
 	glfwSetWindowCloseCallback(mWindow, [](GLFWwindow* window) {
-		App::Window()->CallbackClose(window);
+		App::Window()->CallbackClose();
 	});
 	glfwSetDropCallback(mWindow, [](GLFWwindow* window, int count, const char** paths) {
-		App::Window()->CallbackDrop(window, count, paths);
+		App::Window()->CallbackDrop(count, paths);
 	});
 	glfwSetKeyCallback(mWindow, [](GLFWwindow* window, int key, int scanCode, int action, int mods) {
-		App::Input()->CallbackKeyEvent(window, key, scanCode, action, mods);
+		App::Input()->CallbackKeyEvent(key, scanCode, action, mods);
 		ImGui_ImplGlfw_KeyCallback(window, key, scanCode, action, mods);
 	});
 	glfwSetCharCallback(mWindow, [](GLFWwindow* window, unsigned int codePoint) {
-		App::Input()->CallbackTextEvent(window, codePoint);
+		App::Input()->CallbackTextEvent(codePoint);
 		ImGui_ImplGlfw_CharCallback(window, codePoint);
 	});
 	glfwSetCursorPosCallback(mWindow, [](GLFWwindow* window, double xPos, double yPos) {
-		App::Input()->CallbackMouseMoveEvent(window, xPos, yPos);
+		App::Input()->CallbackMouseMoveEvent(xPos, yPos);
 	});
 	glfwSetMouseButtonCallback(mWindow, [](GLFWwindow* window, int button, int action, int mods) {
-		App::Input()->CallbackMouseButtonEvent(window, button, action, mods);
+		App::Input()->CallbackMouseButtonEvent(button, action, mods);
 		ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
 	});
 	glfwSetScrollCallback(mWindow, [](GLFWwindow* window, double xOffset, double yOffset) {
-		App::Input()->CallbackMouseScrollEvent(window, xOffset, yOffset);
+		App::Input()->CallbackMouseScrollEvent(xOffset, yOffset);
 		ImGui_ImplGlfw_ScrollCallback(window, xOffset, yOffset);
 	});
 }

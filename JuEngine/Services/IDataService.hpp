@@ -16,8 +16,10 @@ class JUENGINEAPI IDataService : public IObject
 	public:
 		template <typename T, typename... TArgs> inline auto Add(const Identifier& id, TArgs&&... args) -> T*;
 		template <typename T, typename RealT, typename... TArgs> inline auto Add(const Identifier& id, TArgs&&... args) -> T*;
+		template <typename T> inline auto Set(const Identifier& id, T* data) -> T*;
 		template <typename T> inline auto Get() -> T*;
 		template <typename T> inline auto Get(const Identifier& id) -> T*;
+		template <typename T> inline auto GetAll() -> std::vector<T*>;
 		template <typename T> inline void Delete(const Identifier& id);
 		template <typename T> inline void DeleteAll();
 		template <typename T> inline void ForEach(const std::function<void(T*)> function);
@@ -45,6 +47,12 @@ auto IDataService::Add(const Identifier& id, TArgs&&... args) -> T*
 }
 
 template <typename T>
+auto IDataService::Set(const Identifier& id, T* data) -> T*
+{
+	return static_cast<T*>(Add(typeid(T), id, static_cast<T*>(data)));
+}
+
+template <typename T>
 auto IDataService::Get() -> T*
 {
 	return static_cast<T*>(Get(typeid(T)));
@@ -54,6 +62,19 @@ template <typename T>
 auto IDataService::Get(const Identifier& id) -> T*
 {
 	return static_cast<T*>(Get(typeid(T), id));
+}
+
+template <typename T>
+auto IDataService::GetAll() -> std::vector<T*>
+{
+	std::vector<T*> data;
+
+	for(auto &obj : GetAll(typeid(T)))
+	{
+		data.push_back(static_cast<T*>(obj));
+	}
+
+	return data;
 }
 
 template <typename T>
