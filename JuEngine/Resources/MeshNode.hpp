@@ -10,6 +10,8 @@
 namespace JuEngine
 {
 class Mesh;
+class Material;
+class Texture;
 
 class JUENGINEAPI MeshNode : public IObject
 {
@@ -20,9 +22,12 @@ class JUENGINEAPI MeshNode : public IObject
 		auto AddMeshNode(MeshNode* meshNode) -> MeshNode*;
 		auto RemoveMeshNode(MeshNode* meshNode) -> MeshNode*;
 
-		auto GetMeshList() -> std::vector<Mesh*>&;
 		auto AddMesh(Mesh* mesh) -> MeshNode*;
 		auto RemoveMesh(Mesh* mesh) -> MeshNode*;
+
+		auto GetMeshList() -> std::vector<Mesh*>;
+		auto GetMaterialList() -> std::vector<Material*>;
+		auto GetTextureList() -> std::vector<Texture*>;
 
 	private:
 		std::vector<MeshNode*> mMeshNodeList;

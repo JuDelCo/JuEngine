@@ -3,6 +3,8 @@
 // GPLv3 License web page: http://www.gnu.org/licenses/gpl.txt
 
 #include "MeshNode.hpp"
+#include "Material.hpp"
+#include "Mesh.hpp"
 #include "../App.hpp"
 #include <GL/glew.h>
 #include <algorithm>
@@ -35,11 +37,6 @@ auto MeshNode::RemoveMeshNode(MeshNode* meshNode) -> MeshNode*
 	return this;
 }
 
-auto MeshNode::GetMeshList() -> std::vector<Mesh*>&
-{
-	return mMeshList;
-}
-
 auto MeshNode::AddMesh(Mesh* mesh) -> MeshNode*
 {
 	if(std::find(mMeshList.begin(), mMeshList.end(), mesh) == mMeshList.end())
@@ -55,5 +52,66 @@ auto MeshNode::RemoveMesh(Mesh* mesh) -> MeshNode*
 	mMeshList.erase(std::find(mMeshList.begin(), mMeshList.end(), mesh));
 
 	return this;
+}
+
+auto GetMeshNodeListRecursive(MeshNode* meshNode) -> std::vector<MeshNode*>
+{
+	std::vector<MeshNode*> meshNodeList;
+	auto meshNodeListTemp = meshNode->GetMeshNodeList();
+
+	meshNodeList.push_back(meshNode);
+	meshNodeList.insert(meshNodeList.end(), meshNodeListTemp.begin(), meshNodeListTemp.end());
+
+	return meshNodeList;
+}
+
+auto MeshNode::GetMeshList() -> std::vector<Mesh*>
+{
+	auto meshNodeList = GetMeshNodeListRecursive(this);
+	std::vector<Mesh*> meshList;
+
+	for(auto &meshNode : meshNodeList)
+	{
+		meshList.insert(meshList.end(), meshNode->mMeshList.begin(), meshNode->mMeshList.end());
+	}
+
+	return meshList;
+}
+
+auto MeshNode::GetMaterialList() -> std::vector<Material*>
+{
+	auto meshList = GetMeshList();
+	std::vector<Material*> materialList;
+
+	for(auto &mesh : meshList)
+	{
+		auto material = mesh->GetMaterial();
+
+		if(material != nullptr)
+		{
+			materialList.push_back(material);
+		}
+	}
+
+	return materialList;
+}
+
+auto MeshNode::GetTextureList() -> std::vector<Texture*>
+{
+	auto meshList = GetMeshList();
+	std::vector<Texture*> textureList;
+
+	for(auto &mesh : meshList)
+	{
+		auto material = mesh->GetMaterial();
+
+		if(material != nullptr)
+		{
+			auto textureListTemp = material->GetTextureList();
+			textureList.insert(textureList.end(), textureListTemp.begin(), textureListTemp.end());
+		}
+	}
+
+	return textureList;
 }
 }

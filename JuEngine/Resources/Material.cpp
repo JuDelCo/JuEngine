@@ -7,6 +7,7 @@
 #include "../Resources/Texture.hpp"
 #include "../App.hpp"
 #include "../Services/IDataService.hpp"
+#include <algorithm>
 
 namespace JuEngine
 {
@@ -75,6 +76,21 @@ auto Material::SetShininessFactor(const float shininessFactor) -> Material*
 	mShininessFactor = shininessFactor;
 
 	return this;
+}
+
+auto Material::GetTextureList() -> std::vector<Texture*>
+{
+	std::vector<Texture*> textures;
+
+	for(auto &pair : mTextures)
+	{
+		if(std::find(textures.begin(), textures.end(), pair.second) == textures.end())
+		{
+			textures.push_back(pair.second);
+		}
+	}
+
+	return textures;
 }
 
 auto Material::GetTexture(const std::string& name) -> Texture*

@@ -6,6 +6,7 @@
 
 #include "../Resources/IObject.hpp"
 #include "../Resources/Math.hpp"
+#include <vector>
 #include <map>
 
 namespace JuEngine
@@ -29,6 +30,7 @@ class JUENGINEAPI Material : public IObject
 		auto GetShininessFactor() -> const float&;
 		auto SetShininessFactor(const float shininessFactor) -> Material*;
 
+		auto GetTextureList() -> std::vector<Texture*>;
 		auto GetTexture(const std::string& name) -> Texture*;
 		auto SetTexture(const std::string& name, Texture* texture) -> Material*;
 

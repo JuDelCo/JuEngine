@@ -9,7 +9,7 @@
 
 namespace JuEngine
 {
-Mesh::Mesh(const std::vector<float>& vertexArray, const std::vector<unsigned int>& indexArray, const MeshDrawMode drawMode, Material* material) : IObject("mesh")
+Mesh::Mesh(const std::vector<float>& vertexArray, const std::vector<unsigned int>& indexArray, const MeshDrawMode drawMode, const MeshVertexFormat meshVertexFormat, Material* material) : IObject("mesh")
 {
 	glGenVertexArrays(1, &mVAO);
 	glGenBuffers(1, &mVBO);
@@ -21,14 +21,49 @@ Mesh::Mesh(const std::vector<float>& vertexArray, const std::vector<unsigned int
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexArray.size() * sizeof(unsigned int), indexArray.data(), GL_STATIC_DRAW); // GL_DYNAMIC_DRAW, GL_STREAM_DRAW
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, mNumVertexAttr * sizeof(float), 0);
-	glEnableVertexAttribArray(0); // Vertex Positions
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, mNumVertexAttr * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1); // Vertex Normals
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, mNumVertexAttr * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2); // Texture Coordinates
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, mNumVertexAttr * sizeof(float), (void*)(8 * sizeof(float)));
-	glEnableVertexAttribArray(3); // Vertex Color
+	mNumVertexAttr = GetNumVertexAttr(meshVertexFormat);
+
+	if(meshVertexFormat == MeshVertexFormat::PositionColor)
+	{
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, mNumVertexAttr * sizeof(float), 0);
+		glEnableVertexAttribArray(0); // Positions
+		glVertexAttribPointer(3, 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_FALSE, mNumVertexAttr * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(3); // Colors
+	}
+	else if(meshVertexFormat == MeshVertexFormat::PositionTextureColor)
+	{
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, mNumVertexAttr * sizeof(float), 0);
+		glEnableVertexAttribArray(0); // Positions
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, mNumVertexAttr * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(2); // Texture Coordinates
+		glVertexAttribPointer(3, 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_FALSE, mNumVertexAttr * sizeof(float), (void*)(5 * sizeof(float)));
+		glEnableVertexAttribArray(3); // Colors
+	}
+	else if(meshVertexFormat == MeshVertexFormat::PositionNormalColor)
+	{
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, mNumVertexAttr * sizeof(float), 0);
+		glEnableVertexAttribArray(0); // Positions
+		glVertexAttribPointer(1, 4, GL_INT_2_10_10_10_REV, GL_FALSE, mNumVertexAttr * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(1); // Normals
+		glVertexAttribPointer(3, 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_FALSE, mNumVertexAttr * sizeof(float), (void*)(4 * sizeof(float)));
+		glEnableVertexAttribArray(3); // Colors
+	}
+	else if(meshVertexFormat == MeshVertexFormat::PositionNormalTexture)
+	{
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, mNumVertexAttr * sizeof(float), 0);
+		glEnableVertexAttribArray(0); // Positions
+		glVertexAttribPointer(1, 4, GL_INT_2_10_10_10_REV, GL_FALSE, mNumVertexAttr * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(1); // Normals
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, mNumVertexAttr * sizeof(float), (void*)(4 * sizeof(float)));
+		glEnableVertexAttribArray(2); // Texture Coordinates
+	}
+	else if(meshVertexFormat == MeshVertexFormat::PositionTexture)
+	{
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, mNumVertexAttr * sizeof(float), 0);
+		glEnableVertexAttribArray(0); // Positions
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, mNumVertexAttr * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(2); // Texture Coordinates
+	}
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -37,41 +72,7 @@ Mesh::Mesh(const std::vector<float>& vertexArray, const std::vector<unsigned int
 	mVertexCount = vertexArray.size() / mNumVertexAttr;
 	mIndexCount = indexArray.size();
 
-	switch (drawMode)
-	{
-		case MeshDrawMode::Points:
-			mDrawMode = GL_POINTS;
-			break;
-		case MeshDrawMode::Lines:
-			mDrawMode = GL_LINES;
-			break;
-		case MeshDrawMode::LineLoop:
-			mDrawMode = GL_LINE_LOOP;
-			break;
-		case MeshDrawMode::LineStrip:
-			mDrawMode = GL_LINE_STRIP;
-			break;
-		case MeshDrawMode::Triangles:
-			mDrawMode = GL_TRIANGLES;
-			break;
-		case MeshDrawMode::TriangleStrip:
-			mDrawMode = GL_TRIANGLE_STRIP;
-			break;
-		case MeshDrawMode::TriangleFan:
-			mDrawMode = GL_TRIANGLE_FAN;
-			break;
-		case MeshDrawMode::Quads:
-			mDrawMode = GL_QUADS;
-			break;
-		case MeshDrawMode::QuadStrip:
-			mDrawMode = GL_QUAD_STRIP;
-			break;
-		case MeshDrawMode::Polygon:
-			mDrawMode = GL_POLYGON;
-			break;
-		default:
-			mDrawMode = GL_TRIANGLES;
-	}
+	mDrawMode = drawMode;
 
 	SetMaterial(material);
 }
@@ -98,6 +99,71 @@ void Mesh::DisableMeshes()
 	glBindVertexArray(0);
 }
 
+auto Mesh::GetNumVertexAttr(MeshVertexFormat meshVertexFormat) -> unsigned int
+{
+	unsigned int numVertexAttr = 0;
+
+	switch (meshVertexFormat)
+	{
+		case MeshVertexFormat::PositionColor:
+			numVertexAttr = 4;
+			break;
+		case MeshVertexFormat::PositionTextureColor:
+			numVertexAttr = 6;
+			break;
+		case MeshVertexFormat::PositionNormalColor:
+			numVertexAttr = 5;
+			break;
+		case MeshVertexFormat::PositionNormalTexture:
+			numVertexAttr = 6;
+			break;
+		case MeshVertexFormat::PositionTexture:
+			numVertexAttr = 5;
+			break;
+	}
+
+	return numVertexAttr;
+}
+
+auto Mesh::GetDrawModeGL(MeshDrawMode meshDrawMode) -> const uint32_t
+{
+	switch (meshDrawMode)
+	{
+		case MeshDrawMode::Points:
+			return GL_POINTS;
+			break;
+		case MeshDrawMode::Lines:
+			return GL_LINES;
+			break;
+		case MeshDrawMode::LineLoop:
+			return GL_LINE_LOOP;
+			break;
+		case MeshDrawMode::LineStrip:
+			return GL_LINE_STRIP;
+			break;
+		case MeshDrawMode::Triangles:
+			return GL_TRIANGLES;
+			break;
+		case MeshDrawMode::TriangleStrip:
+			return GL_TRIANGLE_STRIP;
+			break;
+		case MeshDrawMode::TriangleFan:
+			return GL_TRIANGLE_FAN;
+			break;
+		case MeshDrawMode::Quads:
+			return GL_QUADS;
+			break;
+		case MeshDrawMode::QuadStrip:
+			return GL_QUAD_STRIP;
+			break;
+		case MeshDrawMode::Polygon:
+			return GL_POLYGON;
+			break;
+	}
+
+	return GL_TRIANGLES;
+}
+
 auto Mesh::GetNumVertexAttr() const -> const unsigned int
 {
 	return mNumVertexAttr;
@@ -113,7 +179,7 @@ auto Mesh::GetIndexCount() const -> const unsigned int
 	return mIndexCount;
 }
 
-auto Mesh::GetDrawMode() const -> const GLenum
+auto Mesh::GetDrawMode() const -> const MeshDrawMode
 {
 	return mDrawMode;
 }

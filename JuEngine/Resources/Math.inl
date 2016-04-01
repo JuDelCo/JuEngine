@@ -51,6 +51,16 @@ inline vec4 __attribute__((always_inline)) Clamp(const vec4 x, const float min, 
 	return vec4(Min(Max(x.x, min), max), Min(Max(x.y, min), max), Min(Max(x.z, min), max), Min(Max(x.w, min), max));
 }
 
+inline float __attribute__((always_inline)) ConvertRange(float oldMin, float oldMax, float newMin, float newMax, float value)
+{
+	if(oldMax - oldMin == 0)
+	{
+		return newMin;
+	}
+
+	return (((value - oldMin) * (newMax - newMin)) / (oldMax - oldMin)) + newMin;
+}
+
 inline float __attribute__((always_inline)) Dot(const vec2 x, const vec2 y)
 {
 	vec2 temp(x * y);

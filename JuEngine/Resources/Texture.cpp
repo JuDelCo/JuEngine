@@ -7,6 +7,8 @@
 #include <GL/glew.h>
 
 #define STBI_ONLY_PNG
+#define STBI_ONLY_JPEG
+#define STBI_ONLY_TGA
 #define STBI_ONLY_HDR
 #define STB_IMAGE_IMPLEMENTATION
 #include "../ImGui/stb_image.h"
@@ -17,8 +19,6 @@ static unsigned int lastTextureUnit = 0;
 
 Texture::Texture(const std::string& texturePath, const bool generateMipMaps)
 {
-	static auto shadersPath = "Assets/Textures/";
-
 	mPath = texturePath;
 
 	glGenTextures(1, &mTexture);
@@ -27,7 +27,7 @@ Texture::Texture(const std::string& texturePath, const bool generateMipMaps)
 
 	int componentsPerPixel;
 	stbi_set_flip_vertically_on_load(true);
-	unsigned char *image = stbi_load((shadersPath + texturePath).c_str(), &mHeight, &mWidth, &componentsPerPixel, 0 /* STBI_rgb_alpha == 4 */);
+	unsigned char* image = stbi_load((texturePath).c_str(), &mHeight, &mWidth, &componentsPerPixel, 0 /*STBI_rgb_alpha == 4*/);
 
 	if(image == nullptr)
 	{
@@ -39,7 +39,15 @@ Texture::Texture(const std::string& texturePath, const bool generateMipMaps)
 		return;
 	}
 
-	if(componentsPerPixel == 3)
+	if(componentsPerPixel == 1)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, mWidth, mHeight, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, image);
+	}
+	else if(componentsPerPixel == 2)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_STENCIL, mWidth, mHeight, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_BYTE, image);
+	}
+	else if(componentsPerPixel == 3)
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, mWidth, mHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	}
@@ -49,7 +57,7 @@ Texture::Texture(const std::string& texturePath, const bool generateMipMaps)
 	}
 	else
 	{
-		App::Log()->Error("Error: Error loading an image with 3 or 4 components per pixel '%s', image has %u", texturePath.c_str(), componentsPerPixel);
+		App::Log()->Error("Error: Error loading an image with 1-4 components per pixel '%s', image has %u", texturePath.c_str(), componentsPerPixel);
 	}
 
 	stbi_image_free(image);

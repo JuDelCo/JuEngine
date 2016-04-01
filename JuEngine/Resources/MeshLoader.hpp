@@ -14,7 +14,7 @@ class Material;
 class JUENGINEAPI MeshLoader : public IObject
 {
 	public:
-		static auto Load(const std::string& filePath, const MeshDrawMode drawMode = MeshDrawMode::Triangles) -> MeshNode*;
+		static auto Load(const std::string& filePath, const MeshVertexFormat meshVertexFormat, const MeshDrawMode drawMode = MeshDrawMode::Triangles) -> MeshNode*;
 		static auto GenerateQuad(Material* material) -> MeshNode*;
 
 	protected:

@@ -28,6 +28,7 @@ float Clamp(const float x, const float min = 0.f, const float max = 1.f);
 vec2 Clamp(const vec2 x, const float min = 0.f, const float max = 1.f);
 vec3 Clamp(const vec3 x, const float min = 0.f, const float max = 1.f);
 vec4 Clamp(const vec4 x, const float min = 0.f, const float max = 1.f);
+float ConvertRange(float oldMin, float oldMax, float newMin, float newMax, float value);
 float Dot(const vec2 x, const vec2 y);
 float Dot(const vec3 x, const vec3 y);
 float Dot(const vec4 x, const vec4 y);

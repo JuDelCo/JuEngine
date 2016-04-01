@@ -16,10 +16,8 @@ static GLuint lastShaderProgram = 0;
 
 Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath) : IObject("shader")
 {
-	static auto shadersPath = "Assets/Shaders/";
-
-	AddShader(GL_VERTEX_SHADER, shadersPath + vertexPath);
-	AddShader(GL_FRAGMENT_SHADER, shadersPath + fragmentPath);
+	AddShader(ShaderType::Vertex, vertexPath);
+	AddShader(ShaderType::Fragment, fragmentPath);
 
 	Reload(true);
 }
@@ -101,13 +99,13 @@ void Shader::SetUniformTexture(const std::string& name, const unsigned int index
 	glUniform1i(GetUniformLocation(name), index);
 }
 
-void Shader::BindUniformBlock(const std::string& name, const GLuint mUniformBufferBindingIndex)
+void Shader::BindUniformBlock(const std::string& name, const uint32_t mUniformBufferBindingIndex)
 {
 	auto location = GetUniformBlockLocation(mShaderProgram, name);
 	glUniformBlockBinding(mShaderProgram, location, mUniformBufferBindingIndex);
 }
 
-void Shader::AddShader(const GLenum shaderType, const std::string& shaderPath)
+void Shader::AddShader(const ShaderType shaderType, const std::string& shaderPath)
 {
 	mShaderFiles[shaderType] = shaderPath;
 }
@@ -485,7 +483,7 @@ auto Shader::PrintUniformBlockNames() -> std::string
 	return ss.str();
 }
 
-auto Shader::GetUniformLocation(const std::string& name) -> GLint
+auto Shader::GetUniformLocation(const std::string& name) -> int32_t
 {
 	if(mUniformCache.find(name) == mUniformCache.end())
 	{
@@ -519,9 +517,31 @@ auto Shader::ReadFile(const std::string& shaderPath) -> const std::string
 	return shaderBuffer;
 }
 
-auto Shader::CreateShader(const GLenum shaderType, const std::string& shaderPath) -> GLuint
+auto Shader::CreateShader(const ShaderType shaderType, const std::string& shaderPath) -> uint32_t
 {
-	GLuint shaderID = glCreateShader(shaderType);
+	GLuint shaderID = 0;
+
+	switch (shaderType)
+	{
+		case ShaderType::Vertex:
+			shaderID = glCreateShader(GL_VERTEX_SHADER);
+			break;
+		case ShaderType::Geometry:
+			shaderID = glCreateShader(GL_GEOMETRY_SHADER);
+			break;
+		case ShaderType::Fragment:
+			shaderID = glCreateShader(GL_FRAGMENT_SHADER);
+			break;
+		case ShaderType::TessControl:
+			shaderID = glCreateShader(GL_TESS_CONTROL_SHADER);
+			break;
+		case ShaderType::TessEvaluation:
+			shaderID = glCreateShader(GL_TESS_EVALUATION_SHADER);
+			break;
+		case ShaderType::Compute:
+			shaderID = glCreateShader(GL_COMPUTE_SHADER);
+			break;
+	}
 
 	auto shaderSource = Shader::ReadFile(shaderPath);
 
@@ -557,7 +577,7 @@ auto Shader::CreateShader(const GLenum shaderType, const std::string& shaderPath
 	return shaderID;
 }
 
-auto Shader::CreateProgram(const std::vector<GLuint>& shaders) -> GLuint
+auto Shader::CreateProgram(const std::vector<uint32_t>& shaders) -> uint32_t
 {
 	GLuint programID = glCreateProgram();
 
@@ -595,12 +615,12 @@ auto Shader::CreateProgram(const std::vector<GLuint>& shaders) -> GLuint
 	return programID;
 }
 
-auto Shader::GetUniformLocation(const GLuint shaderProgram, const std::string& name) -> GLint
+auto Shader::GetUniformLocation(const uint32_t shaderProgram, const std::string& name) -> int32_t
 {
 	return glGetUniformLocation(shaderProgram, name.c_str());
 }
 
-auto Shader::GetUniformBlockLocation(const GLuint shaderProgram, const std::string& name) -> GLint
+auto Shader::GetUniformBlockLocation(const uint32_t shaderProgram, const std::string& name) -> int32_t
 {
 	return glGetUniformBlockIndex(shaderProgram, name.c_str());
 }

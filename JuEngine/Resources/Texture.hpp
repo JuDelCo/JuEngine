@@ -7,8 +7,6 @@
 #include "../Resources/IObject.hpp"
 #include "../Resources/Math.hpp"
 
-typedef unsigned int GLuint;
-
 namespace JuEngine
 {
 enum class TextureWrappingMode
@@ -51,7 +49,7 @@ class JUENGINEAPI Texture : public IObject
 	private:
 		static void ChangeTextureUnit(unsigned int unit);
 
-		GLuint mTexture{0};
+		uint32_t mTexture{0};
 		int mHeight{0};
 		int mWidth{0};
 		std::string mPath;

@@ -15,17 +15,17 @@
 
 namespace JuEngine
 {
-auto ProcessNode(aiNode* node, const aiScene* scene) -> MeshNode*;
-auto ProcessMesh(aiMesh* mesh, const aiScene* scene) -> Mesh*;
-void LoadTextures(aiMaterial* mat, aiTextureType type, Material* material, const std::string& textureName);
+auto ProcessNode(aiNode* node, const aiScene* scene, const MeshVertexFormat meshVertexFormat, const std::string& folderPath) -> MeshNode*;
+auto ProcessMesh(aiMesh* mesh, const aiScene* scene, const MeshVertexFormat meshVertexFormat, const std::string& folderPath) -> Mesh*;
+void LoadTextures(aiMaterial* mat, aiTextureType type, Material* material, const std::string& textureName, const std::string& folderPath);
 
-auto MeshLoader::Load(const std::string& filePath, const MeshDrawMode drawMode) -> MeshNode*
+auto MeshLoader::Load(const std::string& filePath, const MeshVertexFormat meshVertexFormat, const MeshDrawMode drawMode) -> MeshNode*
 {
-	static auto modelsPath = "Assets/Models/";
+	std::string folderPath = filePath.substr(0, filePath.find_last_of('/') + 1);
 
 	Assimp::Importer modelImporter;
 
-	const aiScene* scene = modelImporter.ReadFile(modelsPath + filePath,
+	const aiScene* scene = modelImporter.ReadFile(filePath,
 		aiProcess_Triangulate
 		//| aiProcess_RemoveComponent  // Removes animations, materials, light sources, cameras, textures, vertex components
 		//| aiProcess_JoinIdenticalVertices
@@ -46,37 +46,40 @@ auto MeshLoader::Load(const std::string& filePath, const MeshDrawMode drawMode) 
 		return nullptr;
 	}
 
-	auto rootMeshNode = ProcessNode(scene->mRootNode, scene);
+	auto rootMeshNode = ProcessNode(scene->mRootNode, scene, meshVertexFormat, folderPath);
 
 	modelImporter.FreeScene();
 
 	return rootMeshNode;
 }
 
-auto ProcessNode(aiNode* node, const aiScene* scene) -> MeshNode*
+auto ProcessNode(aiNode* node, const aiScene* scene, const MeshVertexFormat meshVertexFormat, const std::string& folderPath) -> MeshNode*
 {
 	auto meshNode = new MeshNode();
 	meshNode->SetId(node->mName.C_Str());
 
 	for(unsigned int meshIndex = 0; meshIndex < node->mNumMeshes; ++meshIndex)
 	{
-		meshNode->AddMesh(ProcessMesh(scene->mMeshes[node->mMeshes[meshIndex]], scene));
+		meshNode->AddMesh(ProcessMesh(scene->mMeshes[node->mMeshes[meshIndex]], scene, meshVertexFormat, folderPath));
 	}
 
 	for(unsigned int subNodeIndex = 0; subNodeIndex < node->mNumChildren; ++subNodeIndex)
 	{
-		meshNode->AddMeshNode(ProcessNode(node->mChildren[subNodeIndex], scene));
+		meshNode->AddMeshNode(ProcessNode(node->mChildren[subNodeIndex], scene, meshVertexFormat, folderPath));
 	}
 
 	return meshNode;
 }
 
-auto ProcessMesh(aiMesh* mesh, const aiScene* scene) -> Mesh*
+auto ProcessMesh(aiMesh* mesh, const aiScene* scene, const MeshVertexFormat meshVertexFormat, const std::string& folderPath) -> Mesh*
 {
-	unsigned int NumVertexAttr = 11; // 11 Attributes = [x3 position, x3 normals, x2 texCoords, x3 Color]
+	unsigned int NumVertexAttr = Mesh::GetNumVertexAttr(meshVertexFormat);
 	std::vector<float> vertexArray;
-	std::vector<GLuint> indexArray;
+	std::vector<uint32_t> indexArray;
 	aiColor4D diffuseColor;
+	float* floatPackedValue;
+	uint32_t packedValue;
+	int16_t nx, ny, nz;
 
 	vertexArray.resize((mesh->mNumVertices * NumVertexAttr), 0.f);
 
@@ -89,36 +92,75 @@ auto ProcessMesh(aiMesh* mesh, const aiScene* scene) -> Mesh*
 			vertexArray[offset+0] = mesh->mVertices[vertexIndex].x; // X
 			vertexArray[offset+1] = mesh->mVertices[vertexIndex].y; // Y
 			vertexArray[offset+2] = mesh->mVertices[vertexIndex].z; // Z
-		}
 
-		if(mesh->HasNormals())
-		{
-			vertexArray[offset+3] = mesh->mNormals[vertexIndex].x; // NX
-			vertexArray[offset+4] = mesh->mNormals[vertexIndex].y; // NY
-			vertexArray[offset+5] = mesh->mNormals[vertexIndex].z; // NZ
-		}
-
-		if(mesh->HasTextureCoords(0)) // Up to 8 different texture coordinates !
-		{
-			vertexArray[offset+6] = mesh->mTextureCoords[0][vertexIndex].x; // U
-			vertexArray[offset+7] = mesh->mTextureCoords[0][vertexIndex].y; // V
-		}
-
-		if (AI_SUCCESS == aiGetMaterialColor(scene->mMaterials[mesh->mMaterialIndex], AI_MATKEY_COLOR_DIFFUSE, &diffuseColor))
-		{
-			vertexArray[offset+8] =  diffuseColor.r; // R
-			vertexArray[offset+9] =  diffuseColor.g; // G
-			vertexArray[offset+10] = diffuseColor.b; // B
+			offset += 3;
 		}
 		else
 		{
-			diffuseColor.r = 255;
-			diffuseColor.g = 0;
-			diffuseColor.b = 255;
+			ThrowRuntimeError("Error, mesh %s's' vertices doesn't have positions (in %s)", mesh->mName.C_Str(), folderPath.c_str());
+		}
+
+		if((meshVertexFormat == MeshVertexFormat::PositionNormalColor || meshVertexFormat == MeshVertexFormat::PositionNormalTexture))
+		{
+			if(mesh->HasNormals())
+			{
+				nz = Math::ConvertRange(-1, 1, -512, 511, mesh->mNormals[vertexIndex].z);
+				ny = Math::ConvertRange(-1, 1, -512, 511, mesh->mNormals[vertexIndex].y);
+				nx = Math::ConvertRange(-1, 1, -512, 511, mesh->mNormals[vertexIndex].x);;
+
+				packedValue = 0;
+				packedValue = packedValue | ((nz >= 0 ? (nz & 0x1FF) : (0x3FF &~ ((abs(nz) - 1) & 0x1FF))) << 20); // NZ
+				packedValue = packedValue | ((ny >= 0 ? (ny & 0x1FF) : (0x3FF &~ ((abs(ny) - 1) & 0x1FF))) << 10); // NY
+				packedValue = packedValue | ((nx >= 0 ? (nx & 0x1FF) : (0x3FF &~ ((abs(nx) - 1) & 0x1FF))) << 0);  // NX
+
+				floatPackedValue = (float*)&packedValue;
+				vertexArray[offset+0] = *floatPackedValue;
+			}
+
+			offset += 1;
+		}
+
+		if((meshVertexFormat == MeshVertexFormat::PositionTextureColor || meshVertexFormat == MeshVertexFormat::PositionNormalTexture || meshVertexFormat == MeshVertexFormat::PositionTexture))
+		{
+			if(mesh->HasTextureCoords(0)) // Up to 8 different texture coordinates !
+			{
+				vertexArray[offset+0] = mesh->mTextureCoords[0][vertexIndex].x; // U
+				vertexArray[offset+1] = mesh->mTextureCoords[0][vertexIndex].y; // V
+			}
+
+			offset += 2;
+		}
+
+		if ((meshVertexFormat == MeshVertexFormat::PositionColor || meshVertexFormat == MeshVertexFormat::PositionTextureColor || meshVertexFormat == MeshVertexFormat::PositionNormalColor))
+		{
+			if(AI_SUCCESS == aiGetMaterialColor(scene->mMaterials[mesh->mMaterialIndex], AI_MATKEY_COLOR_DIFFUSE, &diffuseColor))
+			{
+				packedValue = 0;
+				packedValue = packedValue | (((unsigned int)(diffuseColor.a * 3.f)) << 30);    // A
+				packedValue = packedValue | (((unsigned int)(diffuseColor.b * 1023.f)) << 20); // B
+				packedValue = packedValue | (((unsigned int)(diffuseColor.g * 1023.f)) << 10); // G
+				packedValue = packedValue | (((unsigned int)(diffuseColor.r * 1023.f)) << 0);  // R
+
+				floatPackedValue = (float*)&packedValue;
+				vertexArray[offset+0] = *floatPackedValue;
+			}
+			else
+			{
+				packedValue = 0;
+				packedValue = packedValue | (((unsigned int)(3)) << 30);    // A
+				packedValue = packedValue | (((unsigned int)(1023)) << 20); // B
+				packedValue = packedValue | (((unsigned int)(0)) << 10);    // G
+				packedValue = packedValue | (((unsigned int)(1023)) << 0);  // R
+
+				floatPackedValue = (float*)&packedValue;
+				vertexArray[offset+0] = *floatPackedValue;
+			}
+
+			offset += 1;
 		}
 	}
 
-	indexArray.resize((mesh->mNumFaces * 3), 0.f);
+	indexArray.resize((mesh->mNumFaces * 3), 0.f); // Triangles only !
 
 	for(unsigned int faceIndex = 0; faceIndex < mesh->mNumFaces; ++faceIndex)
 	{
@@ -126,7 +168,7 @@ auto ProcessMesh(aiMesh* mesh, const aiScene* scene) -> Mesh*
 
 		for(unsigned int indexIndex = 0; indexIndex < face.mNumIndices; ++indexIndex)
 		{
-			indexArray[(faceIndex*3)+indexIndex] = face.mIndices[indexIndex];
+			indexArray[(faceIndex*3)+indexIndex] = face.mIndices[indexIndex]; // Triangles only !
 		}
 	}
 
@@ -138,26 +180,26 @@ auto ProcessMesh(aiMesh* mesh, const aiScene* scene) -> Mesh*
 		material = new Material();
 		material->SetDiffuseColor(vec3(diffuseColor.r, diffuseColor.g, diffuseColor.b));
 
-		LoadTextures(mat, aiTextureType_DIFFUSE,      material, "diffuse");
-		LoadTextures(mat, aiTextureType_NORMALS,      material, "normal");
-		LoadTextures(mat, aiTextureType_SPECULAR,     material, "specular");
-		LoadTextures(mat, aiTextureType_EMISSIVE,     material, "emissive");
-		LoadTextures(mat, aiTextureType_DISPLACEMENT, material, "displacement");
-		LoadTextures(mat, aiTextureType_HEIGHT,       material, "height");
-		LoadTextures(mat, aiTextureType_AMBIENT,      material, "ambient");
-		LoadTextures(mat, aiTextureType_LIGHTMAP,     material, "lightmap");
-		LoadTextures(mat, aiTextureType_OPACITY,      material, "opacity");
-		LoadTextures(mat, aiTextureType_REFLECTION,   material, "reflection");
-		LoadTextures(mat, aiTextureType_SHININESS,    material, "shininess");
+		LoadTextures(mat, aiTextureType_DIFFUSE,      material, "diffuse", folderPath);
+		LoadTextures(mat, aiTextureType_NORMALS,      material, "normal", folderPath);
+		LoadTextures(mat, aiTextureType_SPECULAR,     material, "specular", folderPath);
+		LoadTextures(mat, aiTextureType_EMISSIVE,     material, "emissive", folderPath);
+		LoadTextures(mat, aiTextureType_DISPLACEMENT, material, "displacement", folderPath);
+		LoadTextures(mat, aiTextureType_HEIGHT,       material, "height", folderPath);
+		LoadTextures(mat, aiTextureType_AMBIENT,      material, "ambient", folderPath);
+		LoadTextures(mat, aiTextureType_LIGHTMAP,     material, "lightmap", folderPath);
+		LoadTextures(mat, aiTextureType_OPACITY,      material, "opacity", folderPath);
+		LoadTextures(mat, aiTextureType_REFLECTION,   material, "reflection", folderPath);
+		LoadTextures(mat, aiTextureType_SHININESS,    material, "shininess", folderPath);
 	}
 
-	auto loadedMesh = new Mesh(vertexArray, indexArray, MeshDrawMode::Triangles, material);
+	auto loadedMesh = new Mesh(vertexArray, indexArray, MeshDrawMode::Triangles, meshVertexFormat, material);
 	loadedMesh->SetId(mesh->mName.C_Str());
 
 	return loadedMesh;
 }
 
-void LoadTextures(aiMaterial* mat, aiTextureType type, Material* material, const std::string& textureName)
+void LoadTextures(aiMaterial* mat, aiTextureType type, Material* material, const std::string& textureName, const std::string& folderPath)
 {
 	std::vector<Texture*> materialTextures;
 
@@ -165,15 +207,17 @@ void LoadTextures(aiMaterial* mat, aiTextureType type, Material* material, const
 	{
 		aiString str;
 		mat->GetTexture(type, textureIndex, &str);
+
+		auto texturePath = std::string(str.C_Str());
+		std::replace(texturePath.begin(), texturePath.end(), '\\', '/');
+		texturePath = folderPath + texturePath;
 		bool skip = false;
 
-		auto loadedTextures = App::Data()->GetAll<Texture>();
-
-		for(auto &loadedTexture : loadedTextures)
+		for(auto &texture : App::Data()->GetAll<Texture>())
 		{
-			if(! skip && loadedTexture->GetPath() == str.C_Str())
+			if(texture->GetPath() == texturePath)
 			{
-				materialTextures.push_back(loadedTexture);
+				materialTextures.push_back(texture);
 				skip = true;
 				break;
 			}
@@ -181,7 +225,7 @@ void LoadTextures(aiMaterial* mat, aiTextureType type, Material* material, const
 
 		if(! skip)
 		{
-			materialTextures.push_back(new Texture(std::string(str.C_Str())));
+			materialTextures.push_back(App::Data()->Set<Texture>(texturePath, new Texture(texturePath)));
 		}
 	}
 
@@ -201,13 +245,13 @@ void LoadTextures(aiMaterial* mat, aiTextureType type, Material* material, const
 auto MeshLoader::GenerateQuad(Material* material) -> MeshNode*
 {
 	std::vector<float> vertexArray = {
-	//    X      Y      Z      NX    NY    NZ    U     V     R     G     B
-		-0.5f, -0.5f,  0.5f,  1.f,  1.f,  1.f,  0.f,  0.f,  1.f,  1.f,  1.f, // BL
-		 0.5f, -0.5f,  0.5f,  1.f,  1.f,  1.f,  1.f,  0.f,  1.f,  1.f,  1.f, // BR
-		 0.5f,  0.5f,  0.5f,  1.f,  1.f,  1.f,  1.f,  1.f,  1.f,  1.f,  1.f, // TR
-		 0.5f,  0.5f,  0.5f,  1.f,  1.f,  1.f,  1.f,  1.f,  1.f,  1.f,  1.f, // TR
-		-0.5f,  0.5f,  0.5f,  1.f,  1.f,  1.f,  0.f,  1.f,  1.f,  1.f,  1.f, // TL
-		-0.5f, -0.5f,  0.5f,  1.f,  1.f,  1.f,  0.f,  0.f,  1.f,  1.f,  1.f  // BL
+	//    X      Y      Z      U     V
+		-0.5f, -0.5f,  0.5f,  0.f,  0.f, // BL
+		 0.5f, -0.5f,  0.5f,  1.f,  0.f, // BR
+		 0.5f,  0.5f,  0.5f,  1.f,  1.f, // TR
+		 0.5f,  0.5f,  0.5f,  1.f,  1.f, // TR
+		-0.5f,  0.5f,  0.5f,  0.f,  1.f, // TL
+		-0.5f, -0.5f,  0.5f,  0.f,  0.f  // BL
 	};
 
 	std::vector<unsigned int> indexArray = {
@@ -215,6 +259,6 @@ auto MeshLoader::GenerateQuad(Material* material) -> MeshNode*
 		3, 4, 5
 	};
 
-	return (new MeshNode())->AddMesh(new Mesh(vertexArray, indexArray, MeshDrawMode::Triangles, material));
+	return (new MeshNode())->AddMesh(new Mesh(vertexArray, indexArray, MeshDrawMode::Triangles, MeshVertexFormat::PositionTexture, material));
 }
 }

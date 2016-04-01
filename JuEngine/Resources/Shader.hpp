@@ -8,14 +8,19 @@
 #include "../Resources/Math.hpp"
 #include <vector>
 #include <map>
-#include <unordered_map>
-
-typedef unsigned int GLenum;
-typedef int GLint;
-typedef unsigned int GLuint;
 
 namespace JuEngine
 {
+enum class ShaderType
+{
+	Vertex,
+	Geometry,
+	Fragment,
+	TessControl,
+	TessEvaluation,
+	Compute
+};
+
 class JUENGINEAPI Shader : public IObject
 {
 	public:
@@ -35,9 +40,9 @@ class JUENGINEAPI Shader : public IObject
 		void SetUniform(const std::string& name, const mat3 matrix);
 		void SetUniform(const std::string& name, const mat4 matrix);
 		void SetUniformTexture(const std::string& name, const unsigned int index);
-		void BindUniformBlock(const std::string& name, const GLuint mUniformBufferBindingIndex);
+		void BindUniformBlock(const std::string& name, const uint32_t mUniformBufferBindingIndex);
 
-		void AddShader(const GLenum shaderType, const std::string& shaderPath);
+		void AddShader(const ShaderType shaderType, const std::string& shaderPath);
 		void Reload(const bool forceLoad = false);
 
 		auto PrintAttributeNames() -> std::string;
@@ -45,15 +50,15 @@ class JUENGINEAPI Shader : public IObject
 		auto PrintUniformBlockNames() -> std::string;
 
 	private:
-		auto GetUniformLocation(const std::string& name) -> GLint;
+		auto GetUniformLocation(const std::string& name) -> int32_t;
 		static auto ReadFile(const std::string& shaderPath) -> const std::string;
-		static auto CreateShader(const GLenum shaderType, const std::string& shaderPath) -> GLuint;
-		static auto CreateProgram(const std::vector<GLuint>& shaders) -> GLuint;
-		static auto GetUniformLocation(const GLuint shaderProgram, const std::string& name) -> GLint;
-		static auto GetUniformBlockLocation(const GLuint shaderProgram, const std::string& name) -> GLint;
+		static auto CreateShader(const ShaderType shaderType, const std::string& shaderPath) -> uint32_t;
+		static auto CreateProgram(const std::vector<uint32_t>& shaders) -> uint32_t;
+		static auto GetUniformLocation(const uint32_t shaderProgram, const std::string& name) -> int32_t;
+		static auto GetUniformBlockLocation(const uint32_t shaderProgram, const std::string& name) -> int32_t;
 
-		std::map<std::string, GLint> mUniformCache;
-		std::unordered_map<GLenum, std::string> mShaderFiles;
-		GLuint mShaderProgram{0};
+		std::map<std::string, int32_t> mUniformCache;
+		std::map<ShaderType, std::string> mShaderFiles;
+		uint32_t mShaderProgram{0};
 };
 }

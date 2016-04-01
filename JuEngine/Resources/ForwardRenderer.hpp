@@ -6,8 +6,6 @@
 
 #include "Renderer.hpp"
 
-typedef unsigned int GLuint;
-
 namespace JuEngine
 {
 class JUENGINEAPI ForwardRenderer : public Renderer
@@ -22,13 +20,13 @@ class JUENGINEAPI ForwardRenderer : public Renderer
 		void RenderMeshNode(MeshNode* meshNode, Shader* shader);
 
 	private:
-		GLuint mGlobalMatrixBindingIndex{0};
-		GLuint mGlobalMatrixUBO;
-		//GLuint mWorldBindingIndex{1};
-		//GLuint mWorldUBO;
-		//GLuint mMaterialBindingIndex{2};
-		//GLuint mMaterialUBO;
-		//GLuint mLightBindingIndex{3};
-		//GLuint mLightUBO;
+		uint32_t mGlobalMatrixBindingIndex{0};
+		uint32_t mGlobalMatrixUBO;
+		//uint32_t mWorldBindingIndex{1};
+		//uint32_t mWorldUBO;
+		//uint32_t mMaterialBindingIndex{2};
+		//uint32_t mMaterialUBO;
+		//uint32_t mLightBindingIndex{3};
+		//uint32_t mLightUBO;
 };
 }

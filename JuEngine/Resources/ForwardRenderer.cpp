@@ -28,16 +28,18 @@ ForwardRenderer::ForwardRenderer()
 	SetId("forwardRenderer");
 
 	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-	glFrontFace(GL_CW);
+	glCullFace(GL_FRONT);
+	glFrontFace(GL_CCW);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // GL_POINT GL_LINE
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_TRUE);
 	glDepthFunc(GL_LEQUAL);
 	glDepthRange(0.f, 1.f);
-
 	//glEnable(GL_DEPTH_CLAMP);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 	glClearDepth(1.f);
@@ -322,7 +324,7 @@ void ForwardRenderer::RenderMeshNode(MeshNode* meshNode, Shader* shader)
 	{
 		mesh->Use(shader);
 
-		glDrawElements(mesh->GetDrawMode(), mesh->GetIndexCount(), GL_UNSIGNED_INT, 0);
+		glDrawElements(Mesh::GetDrawModeGL(mesh->GetDrawMode()), mesh->GetIndexCount(), GL_UNSIGNED_INT, 0);
 	}
 
 	for(auto &childMeshNode : meshNode->GetMeshNodeList())
